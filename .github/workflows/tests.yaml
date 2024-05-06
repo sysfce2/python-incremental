@@ -15,6 +15,10 @@ on:
     branches: [ trunk ]
 
 
+permissions:
+  contents: read
+
+
 defaults:
   run:
     shell: bash
