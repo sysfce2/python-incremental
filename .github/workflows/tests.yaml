@@ -20,7 +20,6 @@ defaults:
     shell: bash
 
 
-
 jobs:
   testing:
     runs-on: ubuntu-20.04
@@ -41,6 +40,7 @@ jobs:
           # Run non-python version specific jobs.
           - python-version: 3.9
             tox-env: mypy,apidocs
+            skip-coverage: true
 
     steps:
     - uses: actions/checkout@v2
@@ -77,10 +77,68 @@ jobs:
         commit_message: Publish docs for ${{ github.sha }}
         publish_dir: ./website
 
-    - uses: codecov/codecov-action@v1
-      if: always() && matrix.tox-env == 'tests'
+    - name: Prepare coverage results
+      if: ${{ !cancelled() && !matrix.skip-coverage }}
+      run: |
+        # Assign the coverage file a name unique to this job so that the
+        # uploads don't collide.
+        mv .coverage ".coverage-job-${{ matrix.python-version }}-${{ matrix.job-name }}"
+
+    - name: Store coverage file
+      if: ${{ !cancelled() && !matrix.skip-coverage }}
+      uses: actions/upload-artifact@v3
       with:
-        files: coverage.xml
-        name: lnx-${{ matrix.python-version }}-${{ matrix.tox-env }}
-        fail_ci_if_error: true
-        functionalities: gcov,search
+        name: coverage
+        path: .coverage-job-*
+
+  coverage-report:
+    name: Coverage report
+    runs-on: ubuntu-latest
+    # We want to always run the coverage, even when the
+    # tests failed.
+    if: always()
+    needs:
+      - testing  # Wait for test jobs.
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade coverage[toml] diff_cover
+
+    - name: Download coverage reports
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage
+        path: .
+
+    - name: Prepare coverage
+      run: |
+          coverage combine .coverage-job-*
+          # XML is needed for the diff-cover.
+          coverage xml
+
+    - name: Report coverage
+      run: |
+          # Report for the job log.
+          coverage report --skip-covered --skip-empty >> $GITHUB_STEP_SUMMARY
+          diff-cover --markdown-report coverage-report.md --compare-branch origin/trunk coverage.xml
+
+    - name: Enforce diff coverage
+      run: |
+          diff-cover --fail-under=100 --compare-branch origin/trunk coverage.xml
+
+    - name: Generate HTML report on failure
+      if: ${{ failure() }}
+      run: |
+          coverage html --skip-covered --skip-empty
+
+    - name: Upload HTML report on failure
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: html-report
+        path: htmlcov
