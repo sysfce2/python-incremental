@@ -23,10 +23,8 @@ _T = TypeVar("_T", contravariant=True)
 if TYPE_CHECKING:
     from typing_extensions import Literal
     from distutils.dist import Distribution as _Distribution
+    import setuptools
 
-
-else:
-    _Distribution = object
 
 if sys.version_info > (3,):
 
@@ -167,7 +165,7 @@ class Version(object):
             "Version.release_candidate instead.",
             DeprecationWarning,
             stacklevel=2,
-        ),
+        )
         return self.release_candidate
 
     def public(self):  # type: () -> str
@@ -206,7 +204,6 @@ class Version(object):
     local = public
 
     def __repr__(self):  # type: () -> str
-
         if self.release_candidate is None:
             release_candidate = ""
         else:
@@ -360,14 +357,41 @@ def getVersionString(version):  # type: (Version) -> str
     return result
 
 
-def _get_version(dist, keyword, value):  # type: (_Distribution, object, object) -> None
+def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, object, object) -> None
     """
-    Get the version from the package listed in the Distribution.
+    Distutils integration: get the version from the package listed in the Distribution.
+
+    This function is invoked when a ``setup.py`` calls `setup(use_incremental=True)`.
+
+    See https://setuptools.pypa.io/en/latest/userguide/extension.html#adding-arguments
     """
-    if not value:
+    if not value:  # use_incremental=False
         return
 
-    from distutils.command import build_py
+    dist.metadata.version = _load_version(dist)
+
+
+def _get_setuptools_version(dist):  # type: (setuptools.Distribution) -> None
+    """
+    Setuptools integration: get the version from the package
+
+    This function is registered as a setuptools.finalize_distribution_options
+    entry point [1]. It is a no-op unless there is a ``pyproject.toml`` containing
+    a ``[tool.incremental]`` section.
+
+    [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
+    """
+    if not _verify_pyproject_toml("pyproject.toml"):
+        return
+
+    dist.metadata.version = _load_version(dist)
+
+
+def _load_version(dist):  # type: (_Distribution) -> str
+    """
+    Load the version from ``_version.py`` within the distribution.
+    """
+    from setuptools.command import build_py
 
     sp_command = build_py.build_py(dist)
     sp_command.finalize_options()
@@ -379,10 +403,39 @@ def _get_version(dist, keyword, value):  # type: (_Distribution, object, object)
             with open(item[2]) as f:
                 exec(f.read(), version_file)
 
-            dist.metadata.version = version_file["__version__"].public()
-            return None
+            return version_file["__version__"].public()
 
     raise Exception("No _version.py found.")
+
+
+def _verify_pyproject_toml(path):  # type: (str) -> bool
+    """
+    Does the ``pyproject.toml`` file contain an empty ``[tool.incremental]``
+    section? This indicates that the package has opted-in to Incremental
+    versioning.
+
+    We enforce that the section is empty to allow for future extension.
+    """
+    try:
+        import tomllib
+    except ImportError:
+        import tomli as tomllib
+
+    try:
+        with open(path, "rb") as f:
+            data = tomllib.load(f)
+    except FileNotFoundError:
+        return False
+
+    if "tool" not in data:
+        return False
+    if "incremental" not in data["tool"]:
+        return False
+    if data["tool"]["incremental"] == {}:
+        return True
+    raise ValueError(
+        "[tool.incremental] table must be empty. Do you need to upgrade Incremental?"
+    )
 
 
 from ._version import __version__  # noqa: E402

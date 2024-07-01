@@ -7,23 +7,34 @@ Incremental
 
 Incremental is a small library that versions your Python projects.
 
-API documentation can be found `here <https://twisted.github.io/incremental/docs/>`_.
+API documentation can be found `here <https://twisted.org/incremental/docs/>`_.
 
 
 Quick Start
 -----------
 
-Add this to your ``setup.py``\ 's ``setup()`` call, removing any other versioning arguments:
+In your ``pyproject.toml``, add Incremental to your build requirements:
 
-.. code::
+```toml
+[build-system]
+requires = ["setuptools", "incremental>=NEXT"]
+build-backend = "setuptools.build_meta"
+```
 
-   setup(
-       use_incremental=True,
-       setup_requires=['incremental'],
-       install_requires=['incremental'], # along with any other install dependencies
-       ...
-   }
+Specify the project's version as dynamic:
 
+```toml
+[project]
+dynamic = ["version"]
+```
+
+Remove any ``version`` specification and any ``[tool.setuptools.dynamic] version = `` block.
+
+Add this empty block to activate Incremental's setuptools plugin:
+
+```toml
+[tool.incremental]
+```
 
 Install Incremental to your local environment with ``pip install incremental[scripts]``.
 Then run ``python -m incremental.update <projectname> --create``.
@@ -46,6 +57,23 @@ Then, so users of your project can find your version, in your root package's ``_
 
 Subsequent installations of your project will then use Incremental for versioning.
 
+
+Using ``setup.py``
+~~~~~~~~~~~~~~~~
+
+Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
+Add this to your ``setup()`` call, removing any other versioning arguments:
+
+.. code::
+
+   setup(
+       use_incremental=True,
+       setup_requires=['incremental'],
+       install_requires=['incremental'], # along with any other install dependencies
+       ...
+   }
+
+Then proceed with the ``incremental.update`` command above.
 
 Incremental Versions
 --------------------
