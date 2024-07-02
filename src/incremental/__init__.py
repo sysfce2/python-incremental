@@ -408,6 +408,20 @@ def _load_version(dist):  # type: (_Distribution) -> str
     raise Exception("No _version.py found.")
 
 
+def _load_toml(f):  # type: (io.BytesIO) -> Dict
+    """
+    Read the content of a TOML file.
+    """
+    # This import is deferred to avoid a hard dependency on tomli
+    # when no pyproject.toml is present.
+    if sys.version_info > (3, 11):
+        import tomllib
+    else:
+        import tomli as tomllib
+
+    return tomllib.load(f)
+
+
 def _verify_pyproject_toml(path):  # type: (str) -> bool
     """
     Does the ``pyproject.toml`` file contain an empty ``[tool.incremental]``
@@ -417,13 +431,8 @@ def _verify_pyproject_toml(path):  # type: (str) -> bool
     We enforce that the section is empty to allow for future extension.
     """
     try:
-        import tomllib
-    except ImportError:
-        import tomli as tomllib
-
-    try:
         with open(path, "rb") as f:
-            data = tomllib.load(f)
+            data = _load_toml(f)
     except FileNotFoundError:
         return False
 
