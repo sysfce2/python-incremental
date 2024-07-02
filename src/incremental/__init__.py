@@ -417,7 +417,7 @@ def _load_toml(f):  # type: (BinaryIO) -> Any
     if sys.version_info > (3, 11):
         import tomllib
     else:
-        import tomli as tomllib  # type: ignore
+        import tomli as tomllib
 
     return tomllib.load(f)
 
