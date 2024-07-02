@@ -71,7 +71,6 @@ _YEAR_START = 2000
 
 
 def _findPath(path, package):  # type: (str, str) -> FilePath
-
     cwd = FilePath(path)
 
     src_dir = cwd.child("src").child(package.lower())
@@ -112,15 +111,11 @@ def _run(
     _getcwd=None,  # type: Optional[Callable[[], str]]
     _print=print,  # type: Callable[[object], object]
 ):  # type: (...) -> None
-
     if not _getcwd:
         _getcwd = os.getcwd
 
     if not _date:
         _date = datetime.date.today()
-
-    if type(package) != str:
-        package = package.encode("utf8")  # type: ignore[assignment]
 
     _path = FilePath(path) if path else _findPath(_getcwd(), package)
 
@@ -255,7 +250,6 @@ def _run(
     _print("Updating codebase to %s" % (v.public()))
 
     for x in _path.walk():
-
         if not x.isfile():
             continue
 
