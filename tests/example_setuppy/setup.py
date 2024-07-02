@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name="exampleproj",
+    name="example_setuppy",
     package_dir={"": "src"},
-    packages=["exampleproj"],
+    packages=["example_setuppy"],
     use_incremental=True,
     zip_safe=False,
     setup_requires=["incremental"],
