@@ -11,7 +11,7 @@ from __future__ import division, absolute_import
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Any, TypeVar, Union, Optional, Dict
+from typing import TYPE_CHECKING, Any, TypeVar, Union, Optional, Dict, BinaryIO
 
 #
 # Compat functions
@@ -21,9 +21,9 @@ _T = TypeVar("_T", contravariant=True)
 
 
 if TYPE_CHECKING:
+    import io
     from typing_extensions import Literal
     from distutils.dist import Distribution as _Distribution
-    import setuptools
 
 
 if sys.version_info > (3,):
@@ -371,7 +371,7 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
     dist.metadata.version = _load_version(dist)
 
 
-def _get_setuptools_version(dist):  # type: (setuptools.Distribution) -> None
+def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     """
     Setuptools integration: get the version from the package
 
@@ -391,12 +391,12 @@ def _load_version(dist):  # type: (_Distribution) -> str
     """
     Load the version from ``_version.py`` within the distribution.
     """
-    from setuptools.command import build_py
+    from setuptools.command import build_py  # type: ignore
 
     sp_command = build_py.build_py(dist)
     sp_command.finalize_options()
 
-    for item in sp_command.find_all_modules():  # type: ignore[attr-defined]
+    for item in sp_command.find_all_modules():
         if item[1] == "_version":
             version_file = {}  # type: Dict[str, Version]
 
@@ -408,7 +408,7 @@ def _load_version(dist):  # type: (_Distribution) -> str
     raise Exception("No _version.py found.")
 
 
-def _load_toml(f):  # type: (io.BytesIO) -> Dict
+def _load_toml(f):  # type: (BinaryIO) -> Any
     """
     Read the content of a TOML file.
     """
@@ -417,7 +417,7 @@ def _load_toml(f):  # type: (io.BytesIO) -> Dict
     if sys.version_info > (3, 11):
         import tomllib
     else:
-        import tomli as tomllib
+        import tomli as tomllib  # type: ignore
 
     return tomllib.load(f)
 
