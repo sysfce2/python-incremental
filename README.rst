@@ -15,32 +15,32 @@ Quick Start
 
 In your ``pyproject.toml``, add Incremental to your build requirements:
 
-```toml
-[build-system]
-requires = ["setuptools", "incremental>=NEXT"]
-build-backend = "setuptools.build_meta"
-```
+.. code-block:: toml
+
+    [build-system]
+    requires = ["setuptools", "incremental>=NEXT"]
+    build-backend = "setuptools.build_meta"
 
 Specify the project's version as dynamic:
 
-```toml
-[project]
-dynamic = ["version"]
-```
+.. code-block:: toml
+
+    [project]
+    dynamic = ["version"]
 
 Remove any ``version`` specification and any ``[tool.setuptools.dynamic] version = `` block.
 
 Add this empty block to activate Incremental's setuptools plugin:
 
-```toml
-[tool.incremental]
-```
+.. code-block:: toml
+
+    [tool.incremental]
 
 Install Incremental to your local environment with ``pip install incremental[scripts]``.
 Then run ``python -m incremental.update <projectname> --create``.
 It will create a file in your package named ``_version.py`` and look like this:
 
-.. code::
+.. code:: python
 
    from incremental import Version
 
@@ -50,7 +50,7 @@ It will create a file in your package named ``_version.py`` and look like this:
 
 Then, so users of your project can find your version, in your root package's ``__init__.py`` add:
 
-.. code::
+.. code:: python
 
    from ._version import __version__
 
@@ -64,7 +64,7 @@ Using ``setup.py``
 Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
 Add this to your ``setup()`` call, removing any other versioning arguments:
 
-.. code::
+.. code:: python
 
    setup(
        use_incremental=True,
