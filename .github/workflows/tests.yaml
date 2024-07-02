@@ -62,7 +62,7 @@ jobs:
     - name: Run job via tox
       run: |
         # GitHub Actions VM have 2 CPUs.
-        tox --parallel 2
+        TOX_PARALLEL_NO_SPINNER=1 tox --parallel 2
 
     - name: Prepare GitHub Pages
       if: contains(matrix['tox-env'], 'apidocs')
@@ -90,9 +90,9 @@ jobs:
 
     - name: Store coverage file
       if: ${{ !cancelled() && !matrix.skip-coverage }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: coverage
+        name: coverage-${{ matrix.python-version }}-${{ matrix.job-name }}
         path: .coverage-job-*
 
   coverage-report:
@@ -104,7 +104,7 @@ jobs:
     needs:
       - testing  # Wait for test jobs.
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -114,9 +114,10 @@ jobs:
         python -m pip install --upgrade coverage[toml] diff_cover
 
     - name: Download coverage reports
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: coverage
+        pattern: coverage-*
+        merge-multiple: true
         path: .
 
     - name: Prepare coverage
