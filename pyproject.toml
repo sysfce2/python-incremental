@@ -2,12 +2,11 @@
 requires = [
     "setuptools >= 44.1.1",
     "wheel >= 0.36.2",
-    "typing >= 3.7.4.3; python_version < '3.5'",
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
-target-version = ['py27', 'py36', 'py37', 'py38']
+target-version = ['py36', 'py37', 'py38']
 
 [tool.towncrier]
 filename = "NEWS.rst"

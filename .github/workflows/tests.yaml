@@ -26,7 +26,7 @@ defaults:
 
 jobs:
   testing:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       TOXENV: "${{ matrix.tox-env }}"
     name: ${{ matrix.python-version }}-${{ matrix.tox-env }}
@@ -37,7 +37,7 @@ jobs:
         # When updating the minimum Python version here, also update the
         # `python_requires` from `setup.cfg`.
         # Run on latest minor release of each major python version.
-        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, '3.10', '3.11', '3.12']
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
         tox-env: ['tests']
 
         include:
@@ -47,10 +47,10 @@ jobs:
             skip-coverage: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -62,7 +62,7 @@ jobs:
     - name: Run job via tox
       run: |
         # GitHub Actions VM have 2 CPUs.
-        tox --parallel 2
+        TOX_PARALLEL_NO_SPINNER=1 tox --parallel 2
 
     - name: Prepare GitHub Pages
       if: contains(matrix['tox-env'], 'apidocs')
@@ -90,9 +90,9 @@ jobs:
 
     - name: Store coverage file
       if: ${{ !cancelled() && !matrix.skip-coverage }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: coverage
+        name: coverage-${{ matrix.python-version }}-${{ matrix.job-name }}
         path: .coverage-job-*
 
   coverage-report:
@@ -104,7 +104,7 @@ jobs:
     needs:
       - testing  # Wait for test jobs.
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -114,9 +114,10 @@ jobs:
         python -m pip install --upgrade coverage[toml] diff_cover
 
     - name: Download coverage reports
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: coverage
+        pattern: coverage-*
+        merge-multiple: true
         path: .
 
     - name: Prepare coverage
