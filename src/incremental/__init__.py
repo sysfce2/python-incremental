@@ -354,10 +354,10 @@ def _findPath(path, package):  # type: (str, str) -> str
 
     The result is one of:
 
-        - ``src/{package}``
-        - ``{package}``
+        - src/{package}
+        - {package}
 
-    Where ``{package}`` is downcased.
+    Where {package} is downcased.
     """
     src_dir = os.path.join(path, "src", package.lower())
     current_dir = os.path.join(path, package.lower())
@@ -376,7 +376,7 @@ def _findPath(path, package):  # type: (str, str) -> str
 
 def _existing_version(path):  # type: (str) -> Version
     """
-    Load the current version from ``{path}/_version.py``.
+    Load the current version from {path}/_version.py.
     """
     version_info = {}  # type: Dict[str, Version]
 
@@ -392,11 +392,10 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     Setuptools integration: load the version from the working directory
 
     This function is registered as a setuptools.finalize_distribution_options
-    entry point [1]. It is a no-op unless there is a ``pyproject.toml`` containing
-    an empty ``[tool.incremental]`` section.
+    entry point [1]. It is a no-op unless there is a pyproject.toml containing
+    an empty [tool.incremental] section.
 
-    :param dist:
-        An empty `setuptools.Distribution` instance to mutate.
+    @param dist: An empty C{setuptools.Distribution} instance to mutate.
 
     [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
     """
@@ -415,9 +414,9 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
     """
     Distutils integration: get the version from the package listed in the Distribution.
 
-    This function is invoked when a ``setup.py`` calls `setup(use_incremental=True)`.
+    This function is invoked when a C{setup.py} calls C{setup(use_incremental=True)}.
 
-    See https://setuptools.pypa.io/en/latest/userguide/extension.html#adding-arguments
+    @see: https://setuptools.pypa.io/en/latest/userguide/extension.html#adding-arguments
     """
     if not value:  # use_incremental=False
         return
@@ -464,12 +463,12 @@ class _IncrementalConfig:
 
 def _load_pyproject_toml(toml_path):  # type: (str) -> _IncrementalConfig | None:
     """
-    Does the ``pyproject.toml`` file contain a ``[tool.incremental]``
+    Does the pyproject.toml file contain a [tool.incremental]
     section? This indicates that the package has opted-in to Incremental
     versioning.
 
-    If the ``[tool.incremental]`` section is empty we take the project name
-    from the ``[project]`` section. Otherwise we require only a ``name`` key
+    If the [tool.incremental] section is empty we take the project name
+    from the [project] section. Otherwise we require only a C{name} key
     specifying the project name. Other keys are forbidden to allow future
     extension and catch typos.
     """
