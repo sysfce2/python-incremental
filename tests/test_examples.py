@@ -6,6 +6,7 @@ Tests for the packaging examples.
 """
 
 from twisted.trial.unittest import TestCase
+from importlib import metadata
 
 
 class ExampleTests(TestCase):
@@ -16,6 +17,7 @@ class ExampleTests(TestCase):
         import example_setuppy
 
         self.assertEqual(example_setuppy.__version__.base(), "1.2.3")
+        self.assertEqual(metadata.version("example_setuppy"), "1.2.3")
 
     def test_setuptools_version(self):
         """
@@ -24,3 +26,4 @@ class ExampleTests(TestCase):
         import example_setuptools
 
         self.assertEqual(example_setuptools.__version__.base(), "2.3.4")
+        self.assertEqual(metadata.version("example_setuptools"), "2.3.4")

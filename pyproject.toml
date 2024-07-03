@@ -32,7 +32,6 @@ dependencies = [
 [project.optional-dependencies]
 scripts = [
     "click>=6.0",
-    "twisted>=16.4.0",
 ]
 mypy = [
     "mypy==0.812",
