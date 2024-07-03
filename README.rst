@@ -26,9 +26,10 @@ Specify the project's version as dynamic:
 .. code-block:: toml
 
     [project]
+    name = "<projectname>"
     dynamic = ["version"]
 
-Remove any ``version`` specification and any ``[tool.setuptools.dynamic] version = `` block.
+Remove any ``version`` line and any ``[tool.setuptools.dynamic] version = `` entry.
 
 Add this empty block to activate Incremental's setuptools plugin:
 
@@ -44,7 +45,7 @@ It will create a file in your package named ``_version.py`` and look like this:
 
    from incremental import Version
 
-   __version__ = Version("widgetbox", 17, 1, 0)
+   __version__ = Version("<projectname>", 24, 1, 0)
    __all__ = ["__version__"]
 
 
