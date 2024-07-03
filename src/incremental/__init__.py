@@ -461,7 +461,7 @@ class _IncrementalConfig:
     path: str
 
 
-def _load_pyproject_toml(toml_path):  # type: (str) -> _IncrementalConfig | None:
+def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConfig]:
     """
     Does the pyproject.toml file contain a [tool.incremental]
     section? This indicates that the package has opted-in to Incremental
