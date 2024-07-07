@@ -60,7 +60,7 @@ Subsequent installations of your project will then use Incremental for versionin
 
 
 Using ``setup.py``
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
 Add this to your ``setup()`` call, removing any other versioning arguments:
