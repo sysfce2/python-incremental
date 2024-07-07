@@ -406,10 +406,6 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     dist.metadata.version = _existing_version(config.path).public()
 
 
-# Call this hook after all of the built-in setuptools ones, or the Distribution is empty.
-_get_setuptools_version.order = 1
-
-
 def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, object, object) -> None
     """
     Distutils integration: get the version from the package listed in the Distribution.

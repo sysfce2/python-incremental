@@ -6,5 +6,8 @@ setup(
     packages=["example_setuppy"],
     use_incremental=True,
     zip_safe=False,
-    setup_requires=["incremental"],
+    setup_requires=[
+        "incremental",
+        "coverage-p",  # Capture coverage when building the package.
+    ],
 )
