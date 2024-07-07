@@ -303,37 +303,37 @@ class Version(object):
     def __eq__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c == 0
 
     def __ne__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c != 0
 
     def __lt__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c < 0
 
     def __le__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c <= 0
 
     def __gt__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c > 0
 
     def __ge__(self, other):  # type: (object) -> bool
         c = self.__cmp__(other)
         if c is NotImplemented:
-            return c  # type: ignore
+            return c  # type: ignore[return-value]
         return c >= 0
 
 
