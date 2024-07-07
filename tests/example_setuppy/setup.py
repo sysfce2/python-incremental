@@ -8,6 +8,5 @@ setup(
     zip_safe=False,
     setup_requires=[
         "incremental",
-        "coverage-p",  # Capture coverage when building the package.
     ],
 )

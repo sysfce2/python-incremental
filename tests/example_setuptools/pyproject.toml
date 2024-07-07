@@ -2,7 +2,6 @@
 requires = [
     "setuptools",
     "incremental",
-    "coverage-p",  # Capture coverage when building the package.
 ]
 build-backend = "setuptools.build_meta"
 
