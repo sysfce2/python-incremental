@@ -1,8 +1,11 @@
 [build-system]
 requires = [
+    # Keep this aligned with the project dependencies.
     "setuptools >= 61.0",
+    "tomli; python_version < '3.11'",
 ]
-build-backend = "setuptools.build_meta"
+backend-path = [".", "./src"]  # See _build_meta.py
+build-backend = "_build_meta:build_meta"
 
 [project]
 name = "incremental"
@@ -47,8 +50,7 @@ use_incremental = "incremental:_get_distutils_version"
 [project.entry-points."setuptools.finalize_distribution_options"]
 incremental = "incremental:_get_setuptools_version"
 
-[tool.setuptools.dynamic]
-version = {attr = "incremental._setuptools_version"}
+[tool.incremental]
 
 [tool.black]
 target-version = ['py36', 'py37', 'py38']

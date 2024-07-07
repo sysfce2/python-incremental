@@ -517,8 +517,4 @@ Or:
 from ._version import __version__  # noqa: E402
 
 
-def _setuptools_version():  # type: () -> str
-    return __version__.public()
-
-
 __all__ = ["__version__", "Version", "getVersionString"]
