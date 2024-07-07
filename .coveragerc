@@ -4,6 +4,7 @@ source_pkgs = incremental
 # List of directory names.
 source = tests
 branch = True
+parallel = True
 
 [paths]
 source =
