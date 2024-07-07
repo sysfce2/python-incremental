@@ -1,17 +1,20 @@
-include .coveragerc
 include LICENSE
 include NEWS.rst
-include towncrier.ini
+include SECURITY.md
 include tox.ini
-exclude mypy.ini
-include src/incremental/py.typed
+include _build_meta.py
 
 recursive-include src/incremental *.py
-
-prune .travis
-prune tests
-
-exclude examplesetup.py
-prune src/exampleproj
-
+include src/incremental/py.typed
 prune src/incremental/newsfragments
+
+global-exclude .coverage*
+include .coveragerc
+
+graft tests
+prune tests/example_*/src/*.egg-info
+prune tests/example_*/build
+prune tests/example_*/dist
+
+global-exclude __pycache__ *.py[cod] *~
+
