@@ -1,0 +1,24 @@
+name: Build incremental
+description: Build and upload sdist and wheel
+
+runs:
+  using: "composite"
+  steps:
+
+  - uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+
+  - run: pip install build twine
+    shell: bash
+
+  - run: python3 -m build
+    shell: bash
+
+  - run: twine check dist/*.*
+    shell: bash
+
+  - uses: actions/upload-artifact@v4
+    with:
+      name: dist
+      path: dist/*.*
