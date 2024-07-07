@@ -415,7 +415,7 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
     @see: https://setuptools.pypa.io/en/latest/userguide/extension.html#adding-arguments
     """
     if not value:  # use_incremental=False
-        return
+        return  # pragma: no cover
 
     from setuptools.command import build_py  # type: ignore
 
@@ -428,7 +428,7 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
             dist.metadata.version = _existing_version(package_path).public()
             return
 
-    raise Exception("No _version.py found.")
+    raise Exception("No _version.py found.")  # pragma: no cover
 
 
 def _load_toml(f):  # type: (BinaryIO) -> Any
