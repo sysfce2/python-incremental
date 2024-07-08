@@ -7,15 +7,65 @@ Incremental
 
 Incremental is a small library that versions your Python projects.
 
-API documentation can be found `here <https://twisted.github.io/incremental/docs/>`_.
+API documentation can be found `here <https://twisted.org/incremental/docs/>`_.
 
 
 Quick Start
 -----------
 
-Add this to your ``setup.py``\ 's ``setup()`` call, removing any other versioning arguments:
+In your ``pyproject.toml``, add Incremental to your build requirements:
 
-.. code::
+.. code-block:: toml
+
+    [build-system]
+    requires = ["setuptools", "incremental>=NEXT"]
+    build-backend = "setuptools.build_meta"
+
+Specify the project's version as dynamic:
+
+.. code-block:: toml
+
+    [project]
+    name = "<projectname>"
+    dynamic = ["version"]
+
+Remove any ``version`` line and any ``[tool.setuptools.dynamic] version = `` entry.
+
+Add this empty block to activate Incremental's setuptools plugin:
+
+.. code-block:: toml
+
+    [tool.incremental]
+
+Install Incremental to your local environment with ``pip install incremental[scripts]``.
+Then run ``python -m incremental.update <projectname> --create``.
+It will create a file in your package named ``_version.py`` and look like this:
+
+.. code:: python
+
+   from incremental import Version
+
+   __version__ = Version("<projectname>", 24, 1, 0)
+   __all__ = ["__version__"]
+
+
+Then, so users of your project can find your version, in your root package's ``__init__.py`` add:
+
+.. code:: python
+
+   from ._version import __version__
+
+
+Subsequent installations of your project will then use Incremental for versioning.
+
+
+Using ``setup.py``
+~~~~~~~~~~~~~~~~~~
+
+Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
+Add this to your ``setup()`` call, removing any other versioning arguments:
+
+.. code:: python
 
    setup(
        use_incremental=True,
@@ -24,28 +74,7 @@ Add this to your ``setup.py``\ 's ``setup()`` call, removing any other versionin
        ...
    }
 
-
-Install Incremental to your local environment with ``pip install incremental[scripts]``.
-Then run ``python -m incremental.update <projectname> --create``.
-It will create a file in your package named ``_version.py`` and look like this:
-
-.. code::
-
-   from incremental import Version
-
-   __version__ = Version("widgetbox", 17, 1, 0)
-   __all__ = ["__version__"]
-
-
-Then, so users of your project can find your version, in your root package's ``__init__.py`` add:
-
-.. code::
-
-   from ._version import __version__
-
-
-Subsequent installations of your project will then use Incremental for versioning.
-
+Then proceed with the ``incremental.update`` command above.
 
 Incremental Versions
 --------------------

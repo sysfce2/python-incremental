@@ -86,13 +86,13 @@ jobs:
       run: |
         # Assign the coverage file a name unique to this job so that the
         # uploads don't collide.
-        mv .coverage ".coverage-job-${{ matrix.python-version }}-${{ matrix.job-name }}"
+        mv .coverage ".coverage-job-${{ matrix.python-version }}-${{ matrix.tox-env }}"
 
     - name: Store coverage file
       if: ${{ !cancelled() && !matrix.skip-coverage }}
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-${{ matrix.python-version }}-${{ matrix.job-name }}
+        name: coverage-${{ matrix.python-version }}-${{ matrix.tox-env }}
         path: .coverage-job-*
 
   coverage-report:

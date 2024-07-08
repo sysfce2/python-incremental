@@ -4,6 +4,10 @@ source_pkgs = incremental
 # List of directory names.
 source = tests
 branch = True
+parallel = True
+# This must be an absolute path because the example tests
+# run Python processes with alternative working directories.
+data_file = ${TOX_INI_DIR-.}/.coverage
 
 [paths]
 source =
