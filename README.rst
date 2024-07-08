@@ -29,7 +29,7 @@ Specify the project's version as dynamic:
     name = "<projectname>"
     dynamic = ["version"]
 
-Remove any ``version`` line and any ``[tool.setuptools.dynamic] version = `` entry.
+Remove any ``version`` line and any ``[tool.setuptools.dynamic] version =`` entry.
 
 Add this empty block to activate Incremental's setuptools plugin:
 
