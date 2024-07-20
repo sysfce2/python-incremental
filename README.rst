@@ -45,11 +45,11 @@ Remove any ``[project] version =`` entry and any ``[tool.setuptools.dynamic] ver
 
 Next, `initialize the project`_.
 
-Using Hatch
-~~~~~~~~~~~
+Using Hatchling
+~~~~~~~~~~~~~~~
 
-If you're using `Hatch <https://hatch.pypa.io/>`_ to package your project,
-activate Incremental's Hatch plugin by altering your ``pyproject.toml``:
+If you're using `Hatchling <https://hatch.pypa.io/>`_ to package your project,
+activate Incremental's Hatchling plugin by altering your ``pyproject.toml``:
 
 .. code:: toml
 
@@ -69,13 +69,12 @@ activate Incremental's Hatch plugin by altering your ``pyproject.toml``:
     # ...
 
     [tool.hatch.version]
-    source = "incremental"    # ← Activate Incremental's Hatch plugin
+    source = "incremental"    # ← Activate Incremental's Hatchling plugin
+
+Incremental can be configured as usual in an optional ``[tool.incremental]`` table.
 
 The ``hatch version`` command will report the Incremental-managed version.
-
 Use the ``python -m incremental.update`` command to change the version (setting it with ``hatch version`` is not supported).
-
-Incremental can be configured as usual in a ``[tool.incremental]`` table.
 
 Next, `initialize the project`_.
 
