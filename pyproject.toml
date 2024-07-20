@@ -37,9 +37,6 @@ dependencies = [
 scripts = [
     "click>=6.0",
 ]
-mypy = [
-    "mypy==0.812",
-]
 
 [project.urls]
 Homepage = "https://github.com/twisted/incremental"
