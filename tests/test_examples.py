@@ -13,6 +13,8 @@ from build import ProjectBuilder
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
+from incremental import Version
+
 
 TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
@@ -47,3 +49,18 @@ class ExampleTests(TestCase):
 
         self.assertEqual(example_setuptools.__version__.base(), "2.3.4")
         self.assertEqual(metadata.version("example_setuptools"), "2.3.4")
+
+    def test_hatchling_get_version(self):
+        """
+        example_hatchling has a version of 24.7.0, which may be retrieved
+        by the ``hatch version`` command.
+        """
+        build_and_install(TEST_DIR.child("example_hatchling"))
+
+        import example_hatchling
+
+        self.assertEqual(
+            example_hatchling.__version__,
+            Version("example_hatchling", 24, 7, 0),
+        )
+        self.assertEqual(metadata.version("example_hatchling"), "24.7.0")
