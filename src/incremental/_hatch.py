@@ -3,7 +3,7 @@
 
 import os
 import shlex
-from typing import TypedDict
+from typing import Any, Dict, List, Type, TypedDict
 
 from hatchling.version.source.plugin.interface import VersionSourceInterface
 from hatchling.plugin import hookimpl
@@ -18,11 +18,13 @@ class _VersionData(TypedDict):
 class IncrementalVersionSource(VersionSourceInterface):
     PLUGIN_NAME = "incremental"
 
-    def get_version_data(self) -> _VersionData:
-        config = _load_pyproject_toml(os.path.join(self.root, "./pyproject.toml"))
+    def get_version_data(self) -> _VersionData:  # type: ignore[override]
+        path = os.path.join(self.root, "./pyproject.toml")
+        config = _load_pyproject_toml(path)
+        assert config is not None, "Failed to read {}".format(path)
         return {"version": _existing_version(config.path).public()}
 
-    def set_version(self, version: str, version_data: dict):
+    def set_version(self, version: str, version_data: Dict[Any, Any]) -> None:
         raise NotImplementedError(
             f"Run `python -m incremental.version --newversion"
             f" {shlex.quote(version)}` to set the version.\n\n"
@@ -31,5 +33,5 @@ class IncrementalVersionSource(VersionSourceInterface):
 
 
 @hookimpl
-def hatch_register_version_source():
+def hatch_register_version_source() -> List[Type[VersionSourceInterface]]:
     return [IncrementalVersionSource]

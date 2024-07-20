@@ -4,7 +4,7 @@
 """Test handling of ``pyproject.toml`` configuration"""
 
 import os
-from typing import Optional
+from typing import cast, Optional, Union
 from pathlib import Path
 from twisted.trial.unittest import TestCase
 
@@ -15,7 +15,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
     """Test the `_load_pyproject_toml` helper function"""
 
     def _loadToml(
-        self, toml: str, *, path: Optional[os.PathLike] = None
+        self, toml: str, *, path: Union[Path, str, None] = None
     ) -> Optional[_IncrementalConfig]:
         """
         Read a TOML snipped from a temporary file with `_load_pyproject_toml`
@@ -24,23 +24,29 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
         @param path: Path to which the TOML is written
         """
-        path = path or self.mktemp()
+        path_: str
+        if path is None:
+            path_ = self.mktemp()  # type: ignore
+        else:
+            path_ = str(path)
 
-        with open(path, "w") as f:
+        with open(path_, "w") as f:
             f.write(toml)
 
         try:
-            return _load_pyproject_toml(path)
+            return _load_pyproject_toml(path_)
         except Exception as e:
             if hasattr(e, "add_note"):
-                e.add_note(f"While loading:\n\n{toml}")  # pragma: no coverage
+                e.add_note(  # type: ignore[attr-defined]
+                    f"While loading:\n\n{toml}"
+                )  # pragma: no coverage
             raise
 
     def test_fileNotFound(self):
         """
         An absent ``pyproject.toml`` file produces no result
         """
-        path = os.path.join(self.mktemp(), "pyproject.toml")
+        path = os.path.join(cast(str, self.mktemp()), "pyproject.toml")
         self.assertIsNone(_load_pyproject_toml(path))
 
     def test_nameMissing(self):
