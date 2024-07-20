@@ -9,37 +9,100 @@ Incremental is a small library that versions your Python projects.
 
 API documentation can be found `here <https://twisted.org/incremental/docs/>`_.
 
+.. contents::
 
 Quick Start
 -----------
 
-In your ``pyproject.toml``, add Incremental to your build requirements:
+Using setuptools
+~~~~~~~~~~~~~~~~
+
+Add Incremental to your ``pyproject.toml``:
 
 .. code-block:: toml
 
     [build-system]
-    requires = ["setuptools", "incremental>=NEXT"]
+    requires = [
+        "setuptools",
+        "incremental>=NEXT",  # ← Add incremental as a build dependency
+    ]
     build-backend = "setuptools.build_meta"
-
-Specify the project's version as dynamic:
-
-.. code-block:: toml
 
     [project]
     name = "<projectname>"
-    dynamic = ["version"]
+    dynamic = ["version"]     # ← Mark the version dynamic
+    dependencies = [
+        "incremental>=NEXT",  # ← Depend on incremental at runtime
+    ]
+    # ...
 
-Remove any ``version`` line and any ``[tool.setuptools.dynamic] version = `` entry.
+    [tool.incremental]        # ← Activate Incremental's setuptools plugin
 
-Add this empty block to activate Incremental's setuptools plugin:
 
-.. code-block:: toml
+It's fine if the ``[tool.incremental]`` table is empty, but it must be present.
 
-    [tool.incremental]
+Remove any ``[project] version =`` entry and any ``[tool.setuptools.dynamic] version =`` entry.
+
+Next, `initialize the project`_.
+
+Using Hatch
+~~~~~~~~~~~
+
+If you're using `Hatch <https://hatch.pypa.io/>`_ to package your project,
+activate Incremental's Hatch plugin by altering your ``pyproject.toml``:
+
+.. code:: toml
+
+    [build-system]
+    requires = [
+        "hatchling",
+        "incremental>=NEXT",  # ← Add incremental as a build dependency
+    ]
+    build-backend = "hatchling.build"
+
+    [project]
+    name = "<projectname>"
+    dynamic = ["version"]     # ← Mark the version dynamic
+    dependencies = [
+        "incremental>=NEXT",  # ← Depend on incremental at runtime
+    ]
+    # ...
+
+    [tool.hatch.version]
+    source = "incremental"    # ← Activate Incremental's Hatch plugin
+
+The ``hatch version`` command will report the Incremental-managed version.
+
+Use the ``python -m incremental.update`` command to change the version (setting it with ``hatch version`` is not supported).
+
+Incremental can be configured as usual in a ``[tool.incremental]`` table.
+
+Next, `initialize the project`_.
+
+Using ``setup.py``
+~~~~~~~~~~~~~~~~~~
+
+Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
+Add this to your ``setup()`` call, removing any other versioning arguments:
+
+.. code:: python
+
+   setup(
+       use_incremental=True,
+       setup_requires=['incremental'],
+       install_requires=['incremental'], # along with any other install dependencies
+       ...
+   }
+
+Then `initialize the project`_.
+
+
+Initialize the project
+~~~~~~~~~~~~~~~~~~~~~~
 
 Install Incremental to your local environment with ``pip install incremental[scripts]``.
 Then run ``python -m incremental.update <projectname> --create``.
-It will create a file in your package named ``_version.py`` and look like this:
+It will create a file in your package named ``_version.py`` like this:
 
 .. code:: python
 
@@ -59,22 +122,6 @@ Then, so users of your project can find your version, in your root package's ``_
 Subsequent installations of your project will then use Incremental for versioning.
 
 
-Using ``setup.py``
-~~~~~~~~~~~~~~~~~~
-
-Incremental may be used from ``setup.py`` instead of ``pyproject.toml``.
-Add this to your ``setup()`` call, removing any other versioning arguments:
-
-.. code:: python
-
-   setup(
-       use_incremental=True,
-       setup_requires=['incremental'],
-       install_requires=['incremental'], # along with any other install dependencies
-       ...
-   }
-
-Then proceed with the ``incremental.update`` command above.
 
 Incremental Versions
 --------------------
@@ -90,7 +137,7 @@ It is made up of the following elements (which are given during instantiation):
 
 You can extract a PEP-440 compatible version string by using the ``.public()`` method, which returns a ``str`` containing the full version. This is the version you should provide to users, or publicly use. An example output would be ``"13.2.0"``, ``"17.1.2dev1"``, or ``"18.8.0rc2"``.
 
-Calling ``repr()`` with a ``Version`` will give a Python-source-code representation of it, and calling ``str()`` with a ``Version`` will provide a string similar to ``'[Incremental, version 16.10.1]'``.
+Calling ``repr()`` with a ``Version`` will give a Python-source-code representation of it, and calling ``str()`` on a ``Version`` produces a string like ``'[Incremental, version 16.10.1]'``.
 
 
 Updating
