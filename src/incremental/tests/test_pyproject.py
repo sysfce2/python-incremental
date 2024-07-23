@@ -4,6 +4,8 @@
 """Test handling of ``pyproject.toml`` configuration"""
 
 import os
+from typing import cast, Optional, Union
+from pathlib import Path
 from twisted.trial.unittest import TestCase
 
 from incremental import _load_pyproject_toml, _IncrementalConfig
@@ -12,106 +14,132 @@ from incremental import _load_pyproject_toml, _IncrementalConfig
 class VerifyPyprojectDotTomlTests(TestCase):
     """Test the `_load_pyproject_toml` helper function"""
 
+    def _loadToml(
+        self, toml: str, *, path: Union[Path, str, None] = None
+    ) -> Optional[_IncrementalConfig]:
+        """
+        Read a TOML snipped from a temporary file with `_load_pyproject_toml`
+
+        @param toml: TOML content of the temporary file
+
+        @param path: Path to which the TOML is written
+        """
+        path_: str
+        if path is None:
+            path_ = self.mktemp()  # type: ignore
+        else:
+            path_ = str(path)
+
+        with open(path_, "w") as f:
+            f.write(toml)
+
+        try:
+            return _load_pyproject_toml(path_)
+        except Exception as e:
+            if hasattr(e, "add_note"):
+                e.add_note(  # type: ignore[attr-defined]
+                    f"While loading:\n\n{toml}"
+                )  # pragma: no coverage
+            raise
+
     def test_fileNotFound(self):
         """
-        Verification fails when no ``pyproject.toml`` file exists.
+        An absent ``pyproject.toml`` file produces no result
         """
-        path = os.path.join(self.mktemp(), "pyproject.toml")
-        self.assertFalse(_load_pyproject_toml(path))
-
-    def test_noToolIncrementalSection(self):
-        """
-        Verification fails when there isn't a ``[tool.incremental]`` section.
-        """
-        path = self.mktemp()
-        for toml in [
-            "\n",
-            "[tool]\n",
-            "[tool.notincremental]\n",
-            '[project]\nname = "foo"\n',
-        ]:
-            with open(path, "w") as f:
-                f.write(toml)
-            self.assertIsNone(_load_pyproject_toml(path))
+        path = os.path.join(cast(str, self.mktemp()), "pyproject.toml")
+        self.assertIsNone(_load_pyproject_toml(path))
 
     def test_nameMissing(self):
         """
         `ValueError` is raised when ``[tool.incremental]`` is present but
         he project name isn't available.
         """
-        path = self.mktemp()
         for toml in [
+            "\n",
+            "[tool.notincremental]\n",
             "[tool.incremental]\n",
             "[project]\n[tool.incremental]\n",
         ]:
-            with open(path, "w") as f:
-                f.write(toml)
-
-            self.assertRaises(ValueError, _load_pyproject_toml, path)
+            self.assertRaises(ValueError, self._loadToml, toml)
 
     def test_nameInvalid(self):
         """
         `TypeError` is raised when the project name isn't a string.
         """
-        path = self.mktemp()
         for toml in [
             "[tool.incremental]\nname = -1\n",
             "[tool.incremental]\n[project]\nname = 1.0\n",
         ]:
-            with open(path, "w") as f:
-                f.write(toml)
-
-            self.assertRaises(TypeError, _load_pyproject_toml, path)
+            self.assertRaises(TypeError, self._loadToml, toml)
 
     def test_toolIncrementalInvalid(self):
         """
-        `ValueError` is raised when the ``[tool.incremental]`` section isn't
-        a dict.
+        `ValueError` is raised when the ``[tool]`` or ``[tool.incremental]``
+        isn't a table.
         """
-        path = self.mktemp()
         for toml in [
+            "tool = false\n",
             "[tool]\nincremental = false\n",
             "[tool]\nincremental = 123\n",
             "[tool]\nincremental = null\n",
         ]:
-            with open(path, "w") as f:
-                f.write(toml)
-
-            self.assertRaises(ValueError, _load_pyproject_toml, path)
+            self.assertRaises(ValueError, self._loadToml, toml)
 
     def test_toolIncrementalUnexpecteKeys(self):
         """
         Raise `ValueError` when the ``[tool.incremental]`` section contains
         keys other than ``"name"``
         """
-        path = self.mktemp()
         for toml in [
             "[tool.incremental]\nfoo = false\n",
             '[tool.incremental]\nname = "OK"\nother = false\n',
         ]:
-            with open(path, "w") as f:
-                f.write(toml)
+            self.assertRaises(ValueError, self._loadToml, toml)
 
-            self.assertRaises(ValueError, _load_pyproject_toml, path)
-
-    def test_ok(self):
+    def test_setuptoolsOptIn(self):
         """
         The package has opted-in to Incremental version management when
-        the ``[tool.incremental]`` section is an empty dict.
+        the ``[tool.incremental]`` section is a dict. The project name
+        is taken from ``[tool.incremental] name`` or ``[project] name``.
         """
-        root = self.mktemp()
-        path = os.path.join(root, "src", "foo")
-        os.makedirs(path)
-        toml_path = os.path.join(root, "pyproject.toml")
+        root = Path(self.mktemp())
+        pkg = root / "src" / "foo"
+        pkg.mkdir(parents=True)
 
         for toml in [
             '[project]\nname = "Foo"\n[tool.incremental]\n',
             '[tool.incremental]\nname = "Foo"\n',
         ]:
-            with open(toml_path, "w") as f:
-                f.write(toml)
+            config = self._loadToml(toml, path=root / "pyproject.toml")
 
             self.assertEqual(
-                _load_pyproject_toml(toml_path),
-                _IncrementalConfig(package="Foo", path=path),
+                config,
+                _IncrementalConfig(
+                    has_tool_incremental=True,
+                    package="Foo",
+                    path=str(pkg),
+                ),
             )
+
+    def test_noToolIncrementalSection(self):
+        """
+        The ``has_tool_incremental`` flag is false when there
+        isn't a ``[tool.incremental]`` section.
+        """
+        root = Path(self.mktemp())
+        pkg = root / "foo"
+        pkg.mkdir(parents=True)
+
+        config = self._loadToml(
+            '[project]\nname = "foo"\n',
+            path=root / "pyproject.toml",
+        )
+
+        self.assertEqual(
+            config,
+            _IncrementalConfig(
+                has_tool_incremental=False,
+                package="foo",
+                path=str(pkg),
+            ),
+        )

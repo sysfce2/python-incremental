@@ -1,0 +1,3 @@
+mypy==0.812
+twisted
+hatchling  # for types

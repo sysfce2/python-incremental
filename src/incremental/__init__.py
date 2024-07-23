@@ -178,7 +178,7 @@ class Version(object):
         if self.release_candidate is None:
             rc = ""
         else:
-            rc = ".rc%s" % (self.release_candidate,)
+            rc = "rc%s" % (self.release_candidate,)
 
         if self.post is None:
             post = ""
@@ -400,7 +400,7 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
     """
     config = _load_pyproject_toml("./pyproject.toml")
-    if not config:
+    if not config or not config.has_tool_incremental:
         return
 
     dist.metadata.version = _existing_version(config.path).public()
@@ -448,20 +448,26 @@ def _load_toml(f):  # type: (BinaryIO) -> Any
 @dataclass(frozen=True)
 class _IncrementalConfig:
     """
-    @ivar package: The package name, capitalized as in the package metadata.
+    Configuration loaded from a ``pyproject.toml`` file.
+    """
 
-    @ivar path: Path to the package root
+    has_tool_incremental: bool
+    """
+    Does the pyproject.toml file contain a [tool.incremental]
+    section? This indicates that the package has explicitly
+    opted-in to Incremental versioning.
     """
 
     package: str
+    """The package name, capitalized as in the package metadata."""
+
     path: str
+    """Path to the package root"""
 
 
 def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConfig]
     """
-    Does the pyproject.toml file contain a [tool.incremental]
-    section? This indicates that the package has opted-in to Incremental
-    versioning.
+    Load Incremental configuration from a ``pyproject.toml``
 
     If the [tool.incremental] section is empty we take the project name
     from the [project] section. Otherwise we require only a C{name} key
@@ -474,16 +480,9 @@ def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConf
     except FileNotFoundError:
         return None
 
-    if "tool" not in data:
-        return None
-    if "incremental" not in data["tool"]:
-        return None
+    tool_incremental = _extract_tool_incremental(data)
 
-    tool_incremental = data["tool"]["incremental"]
-    if not isinstance(tool_incremental, dict):
-        raise ValueError("[tool.incremental] must be a table")
-
-    if tool_incremental == {}:
+    if tool_incremental is None or tool_incremental == {}:
         try:
             package = data["project"]["name"]
         except KeyError:
@@ -509,9 +508,25 @@ Or:
         )
 
     return _IncrementalConfig(
+        has_tool_incremental=tool_incremental is not None,
         package=package,
         path=_findPath(os.path.dirname(toml_path), package),
     )
+
+
+def _extract_tool_incremental(data):  # type: (Dict[str, object]) -> Optional[Dict[str, object]]
+    if "tool" not in data:
+        return None
+    if not isinstance(data["tool"], dict):
+        raise ValueError("[tool] must be a table")
+    if "incremental" not in data["tool"]:
+        return None
+
+    tool_incremental = data["tool"]["incremental"]
+    if not isinstance(tool_incremental, dict):
+        raise ValueError("[tool.incremental] must be a table")
+
+    return tool_incremental
 
 
 from ._version import __version__  # noqa: E402

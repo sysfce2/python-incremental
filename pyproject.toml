@@ -16,6 +16,7 @@ maintainers = [
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Framework :: Hatch",
     "Framework :: Setuptools Plugin",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -36,9 +37,6 @@ dependencies = [
 scripts = [
     "click>=6.0",
 ]
-mypy = [
-    "mypy==0.812",
-]
 
 [project.urls]
 Homepage = "https://github.com/twisted/incremental"
@@ -50,6 +48,8 @@ Changelog = "https://github.com/twisted/incremental/blob/trunk/NEWS.rst"
 use_incremental = "incremental:_get_distutils_version"
 [project.entry-points."setuptools.finalize_distribution_options"]
 incremental = "incremental:_get_setuptools_version"
+[project.entry-points.hatch]
+incremental = "incremental._hatch"
 
 [tool.setuptools.dynamic]
 version = {attr = "incremental._setuptools_version"}
