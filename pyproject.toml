@@ -51,6 +51,9 @@ use_incremental = "incremental:_get_distutils_version"
 [project.entry-points."setuptools.finalize_distribution_options"]
 incremental = "incremental:_get_setuptools_version"
 
+[tool.setuptools.dynamic]
+version = {attr = "incremental._setuptools_version"}
+
 [tool.incremental]
 
 [tool.black]
