@@ -1,0 +1,1 @@
+Incremental no longer inserts a dot before the rc version component (i.e., ``1.2.3rc1`` instead of ``1.2.3.rc1``), resulting in version numbers in the `canonical format <https://packaging.python.org/en/latest/specifications/version-specifiers/#public-version-identifiers>`__.

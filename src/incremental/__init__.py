@@ -178,7 +178,7 @@ class Version(object):
         if self.release_candidate is None:
             rc = ""
         else:
-            rc = ".rc%s" % (self.release_candidate,)
+            rc = "rc%s" % (self.release_candidate,)
 
         if self.post is None:
             post = ""
