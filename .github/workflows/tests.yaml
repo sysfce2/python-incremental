@@ -77,8 +77,10 @@ jobs:
 
     - name: Run job via tox
       run: |
+        export TOX_PARALLEL_NO_SPINNER=1
+        export PIP_FIND_LINKS=dist/
         # GitHub Actions VM have 2 CPUs.
-        TOX_PARALLEL_NO_SPINNER=1 tox --parallel 2 --installpkg dist/*.whl
+        tox --parallel 2 --installpkg dist/*.whl
 
     - name: Prepare GitHub Pages
       if: contains(matrix['tox-env'], 'apidocs')
