@@ -78,7 +78,7 @@ jobs:
     - name: Run job via tox
       run: |
         export TOX_PARALLEL_NO_SPINNER=1
-        export PIP_FIND_LINKS=dist/
+        export PIP_FIND_LINKS="$(realpath dist)"
         # GitHub Actions VM have 2 CPUs.
         tox --parallel 2 --installpkg dist/*.whl
 
