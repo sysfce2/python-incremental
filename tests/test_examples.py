@@ -13,6 +13,8 @@ from build import ProjectBuilder
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
+from incremental import Version
+
 
 TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
@@ -47,3 +49,51 @@ class ExampleTests(TestCase):
 
         self.assertEqual(example_setuptools.__version__.base(), "2.3.4")
         self.assertEqual(metadata.version("example_setuptools"), "2.3.4")
+
+    def test_hatchling_get_version(self):
+        """
+        example_hatchling has a version of 24.7.0.
+        """
+        build_and_install(TEST_DIR.child("example_hatchling"))
+
+        import example_hatchling
+
+        self.assertEqual(
+            example_hatchling.__version__,
+            Version("example_hatchling", 24, 7, 0),
+        )
+        self.assertEqual(metadata.version("example_hatchling"), "24.7.0")
+
+    def test_hatch_version(self):
+        """
+        The ``hatch version`` command reports the version of a package
+        packaged with hatchling.
+        """
+        proc = run(
+            ["hatch", "version"],
+            cwd=TEST_DIR.child("example_hatchling").path,
+            check=True,
+            capture_output=True,
+        )
+
+        self.assertEqual(proc.stdout, b"24.7.0\n")
+
+    def test_hatch_version_set(self):
+        """
+        The ``hatch version`` command can't set the version so its output
+        tells the user to use ``incremental.update`` instead.
+        """
+        proc = run(
+            ["hatch", "--no-color", "version", "24.8.0"],
+            cwd=TEST_DIR.child("example_hatchling").path,
+            check=False,
+            capture_output=True,
+        )
+        suggestion = b"Run `python -m incremental.version --newversion 24.8.0` to set the version."
+
+        self.assertGreater(proc.returncode, 0)
+        self.assertRegex(
+            proc.stdout,
+            # Hatch may wrap the output, so we are flexible about the specifics of whitespace.
+            suggestion.replace(b".", rb"\.").replace(b" ", b"\\s+"),
+        )
