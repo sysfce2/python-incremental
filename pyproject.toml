@@ -51,6 +51,9 @@ incremental = "incremental:_get_setuptools_version"
 [project.entry-points.hatch]
 incremental = "incremental._hatch"
 
+[tool.setuptools.dynamic]
+version = {attr = "incremental._setuptools_version"}
+
 [tool.incremental]
 
 [tool.black]

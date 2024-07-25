@@ -25,8 +25,18 @@ defaults:
 
 
 jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: ./.github/actions/build-dist
+
   testing:
     runs-on: ubuntu-24.04
+    needs: [build]
     env:
       TOXENV: "${{ matrix.tox-env }}"
     name: ${{ matrix.python-version }}-${{ matrix.tox-env }}
@@ -55,14 +65,22 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - uses: twisted/python-info-action@v1
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip tox
 
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
     - name: Run job via tox
       run: |
+        export TOX_PARALLEL_NO_SPINNER=1
+        export PIP_FIND_LINKS="$(realpath dist)"
         # GitHub Actions VM have 2 CPUs.
-        TOX_PARALLEL_NO_SPINNER=1 tox --parallel 2
+        tox --parallel 2 --installpkg dist/*.whl
 
     - name: Prepare GitHub Pages
       if: contains(matrix['tox-env'], 'apidocs')
@@ -73,7 +91,7 @@ jobs:
 
     - name: Publish documentation for push on trunk
       # Since we don't have a separate job for apidocs gh-pages updating
-      # hijack the normal apidoc test and publish the resulting files. 
+      # hijack the normal apidoc test and publish the resulting files.
       if: contains(matrix['tox-env'], 'apidocs') && github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v3
       with:

@@ -38,7 +38,6 @@ Add Incremental to your ``pyproject.toml``:
 
     [tool.incremental]        # ← Activate Incremental's setuptools plugin
 
-
 It's fine if the ``[tool.incremental]`` table is empty, but it must be present.
 
 Remove any ``[project] version =`` entry and any ``[tool.setuptools.dynamic] version =`` entry.
@@ -77,6 +76,7 @@ The ``hatch version`` command will report the Incremental-managed version.
 Use the ``python -m incremental.update`` command to change the version (setting it with ``hatch version`` is not supported).
 
 Next, `initialize the project`_.
+
 
 Using ``setup.py``
 ~~~~~~~~~~~~~~~~~~
