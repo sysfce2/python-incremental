@@ -1,3 +1,28 @@
+Incremental 21.3.0 (2024-07-25)
+===============================
+
+Features
+--------
+
+- Incremental can now be configured using ``pyproject.toml``. (`#90 <https://github.com/twisted/incremental/issues/90>`__)
+- Incremental now provides a read-only `Hatchling version source plugin <https://hatch.pypa.io/latest/plugins/version-source/reference/>`_. (`#93 <https://github.com/twisted/incremental/issues/93>`__)
+
+
+Bugfixes
+--------
+
+- Incremental no longer inserts a dot before the rc version component (i.e., ``1.2.3rc1`` instead of ``1.2.3.rc1``), resulting in version numbers in the `canonical format <https://packaging.python.org/en/latest/specifications/version-specifiers/#public-version-identifiers>`__. (`#81 <https://github.com/twisted/incremental/issues/81>`__)
+- Incremental's tests are now included in the sdist release artifact. (`#80 <https://github.com/twisted/incremental/issues/80>`__)
+
+
+Deprecations and Removals
+-------------------------
+
+- ``incremental[scripts]`` no longer depends on Twisted. (`#88 <https://github.com/twisted/incremental/issues/88>`__)
+- Support for Python 2.7 has been dropped for lack of test infrastructure. We no longer provide universal wheels. (`#86 <https://github.com/twisted/incremental/issues/86>`__)
+- Support for Python 3.5 has been dropped for lack of test infrastructure. (`#92 <https://github.com/twisted/incremental/issues/92>`__)
+
+
 Incremental 22.10.0 (2022-10-15)
 ================================
 

@@ -1,1 +1,0 @@
-Support for Python 2.7 has been dropped for lack of test infrastructure. We no longer provide universal wheels.
