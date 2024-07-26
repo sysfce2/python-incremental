@@ -49,14 +49,24 @@ class VerifyPyprojectDotTomlTests(TestCase):
         path = os.path.join(cast(str, self.mktemp()), "pyproject.toml")
         self.assertIsNone(_load_pyproject_toml(path))
 
-    def test_nameMissing(self):
+    def test_configMissing(self):
         """
-        `ValueError` is raised when ``[tool.incremental]`` is present but
-        he project name isn't available.
+        A ``pyproject.toml`` that exists but provides no relevant configuration
+        is ignored.
         """
         for toml in [
             "\n",
             "[tool.notincremental]\n",
+            "[project]\n",
+        ]:
+            self.assertIsNone(self._loadToml(toml))
+
+    def test_nameMissing(self):
+        """
+        `ValueError` is raised when ``[tool.incremental]`` is present but
+        the project name isn't available.
+        """
+        for toml in [
             "[tool.incremental]\n",
             "[project]\n[tool.incremental]\n",
         ]:
