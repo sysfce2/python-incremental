@@ -3,6 +3,8 @@ include NEWS.rst
 include SECURITY.md
 include tox.ini
 include _build_meta.py
+include requirements_*.in
+include requirements_*.txt
 
 recursive-include src/incremental *.py
 include src/incremental/py.typed
