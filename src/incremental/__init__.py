@@ -396,13 +396,13 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     contexts, so it strives to not raise unless there is a pyproject.toml
     containing a [tool.incremental] section.
 
+    [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
+
     @param dist:
         A (possibly) empty C{setuptools.Distribution} instance to mutate.
         There may be some metadata here if a `setup.py` called `setup()`,
         but this hook is always called before setuptools loads anything
         from ``pyproject.toml``.
-
-    [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
     """
     config = _load_pyproject_toml("./pyproject.toml", opt_in=False)
     if not config or not config.opt_in:
