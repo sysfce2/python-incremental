@@ -158,11 +158,13 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_noToolIncrementalSection(self):
         """
-        The ``opt_in`` flag is false when there isn't a
-        ``[tool.incremental]`` section.
+        We don't produce config unless we find opt-in.
+
+        The ``[project]`` section doesn't imply opt-in, even if we can
+        recover the project name from it.
         """
         root = Path(self.mktemp())
-        pkg = root / "foo"
+        pkg = root / "foo"  # A valid package directory.
         pkg.mkdir(parents=True)
 
         config = self._loadToml(
@@ -171,11 +173,43 @@ class VerifyPyprojectDotTomlTests(TestCase):
             path=root / "pyproject.toml",
         )
 
+        self.assertIsNone(config)
+
+    def test_pathNotFoundOptIn(self):
+        """
+        Once opted in, raise `ValueError` when the package root can't
+        be resolved.
+        """
+        root = Path(self.mktemp())
+        root.mkdir()  # Contains no package directory.
+
+        with self.assertRaisesRegex(ValueError, "Can't find the directory of package"):
+            self._loadToml(
+                '[project]\nname = "foo"\n',
+                opt_in=True,
+                path=root / "pyproject.toml",
+            )
+
+    def test_noToolIncrementalSectionOptIn(self):
+        """
+        If opted in (i.e. in the Hatch plugin) then the [tool.incremental]
+        table is completely optional.
+        """
+        root = Path(self.mktemp())
+        pkg = root / "src" / "foo"
+        pkg.mkdir(parents=True)
+
+        config = self._loadToml(
+            '[project]\nname = "Foo"\n',
+            opt_in=True,
+            path=root / "pyproject.toml",
+        )
+
         self.assertEqual(
             config,
             _IncrementalConfig(
-                opt_in=False,
-                package="foo",
+                opt_in=True,
+                package="Foo",
                 path=str(pkg),
             ),
         )

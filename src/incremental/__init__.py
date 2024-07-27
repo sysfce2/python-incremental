@@ -503,7 +503,10 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
     # Do we have an affirmative opt-in to use Incremental? Otherwise
     # we must *never* raise exceptions.
     opt_in = opt_in or tool_incremental is not None
+    if not opt_in:
+        return None
 
+    # Extract the project name
     package = None
     if tool_incremental is not None and "name" in tool_incremental:
         package = tool_incremental["name"]
@@ -514,11 +517,9 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
         except KeyError:
             pass
     if package is None:
-        # We can't proceed without a project name, but that's only an error
-        # if [tool.incremental] is present.
-        if opt_in:
-            raise ValueError("""\
-Incremental faied to extract the package name from pyproject.toml. Specify it like:
+        # We can't proceed without a project name.
+        raise ValueError("""\
+Incremental failed to extract the package name from pyproject.toml. Specify it like:
 
     [project]
     name = "Foo"
@@ -529,29 +530,15 @@ Or:
     name = "Foo"
 
 """)
-        else:
-            return None
-
     if not isinstance(package, str):
-        if opt_in:
-            raise TypeError(
-                "Package name must be a string, but found {}".format(type(package))
-            )
-        else:
-            return None
-
-    try:
-        path = _findPath(os.path.dirname(toml_path), package)
-    except ValueError:
-        if opt_in:
-            raise
-        else:
-            return None
+        raise TypeError(
+            "Package name must be a string, but found {}".format(type(package))
+        )
 
     return _IncrementalConfig(
         opt_in=opt_in,
         package=package,
-        path=path,
+        path=_findPath(os.path.dirname(toml_path), package),
     )
 
 
