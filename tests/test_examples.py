@@ -69,6 +69,87 @@ class ExampleTests(TestCase):
         self.assertEqual(example_setuptools.__version__.base(), "2.3.4")
         self.assertEqual(metadata.version("example_setuptools"), "2.3.4")
 
+    def test_setuptools_no_optin(self):
+        """
+        The setuptools plugin is a no-op when there isn't a
+        [tool.incremental] table in pyproject.toml.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("pyproject.toml").setContent(
+            b"""\
+[project]
+name = "example_no_optin"
+version = "0.0.0"
+"""
+        )
+        package_dir = src.child("example_no_optin")
+        package_dir.makedirs()
+        package_dir.child("__init__.py").setContent(b"")
+        package_dir.child("_version.py").setContent(
+            b"from incremental import Version\n"
+            b'__version__ = Version("example_no_optin", 24, 7, 0)\n'
+        )
+
+        build_and_install(src)
+
+        self.assertEqual(metadata.version("example_no_optin"), "0.0.0")
+
+    def test_setuptools_no_package(self):
+        """
+        The setuptools plugin is a no-op when there isn't a
+        package directory that matches the project name.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("pyproject.toml").setContent(
+            b"""\
+[project]
+name = "example_no_package"
+version = "0.0.0"
+
+[tool.incremental]
+"""
+        )
+
+        build_and_install(src)
+
+        self.assertEqual(metadata.version("example_no_package"), "0.0.0")
+
+    def test_setuptools_bad_versionpy(self):
+        """
+        The setuptools plugin is a no-op when reading the version
+        from ``_version.py`` fails.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("setup.py").setContent(
+            b"""\
+from setuptools import setup
+
+setup(
+    name="example_bad_versionpy",
+    version="0.1.2",
+    packages=["example_bad_versionpy"],
+    zip_safe=False,
+)
+"""
+        )
+        src.child("pyproject.toml").setContent(
+            b"""\
+[tool.incremental]
+name = "example_bad_versionpy"
+"""
+        )
+        package_dir = src.child("example_bad_versionpy")
+        package_dir.makedirs()
+        package_dir.child("_version.py").setContent(b"bad version.py")
+
+        build_and_install(src)
+
+        # The version from setup.py wins.
+        self.assertEqual(metadata.version("example_bad_versionpy"), "0.1.2")
+
     def test_hatchling_get_version(self):
         """
         example_hatchling has a version of 24.7.0.

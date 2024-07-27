@@ -23,7 +23,7 @@ class IncrementalVersionSource(VersionSourceInterface):
         # If the Hatch plugin is running at all we've already opted in.
         config = _load_pyproject_toml(path)
         assert config is not None, "Failed to read {}".format(path)
-        return {"version": _existing_version(config.path).public()}
+        return {"version": _existing_version(config.version_path).public()}
 
     def set_version(self, version: str, version_data: Dict[Any, Any]) -> None:
         raise NotImplementedError(

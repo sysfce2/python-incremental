@@ -374,14 +374,13 @@ def _findPath(path, package):  # type: (str, str) -> str
         )
 
 
-def _existing_version(path):  # type: (str) -> Version
+def _existing_version(version_path):  # type: (str) -> Version
     """
-    Load the current version from {path}/_version.py.
+    Load the current version from a ``_version.py`` file.
     """
     version_info = {}  # type: Dict[str, Version]
 
-    versionpath = os.path.join(path, "_version.py")
-    with open(versionpath, "r") as f:
+    with open(version_path, "r") as f:
         exec(f.read(), version_info)
 
     return version_info["__version__"]
@@ -393,8 +392,7 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
 
     This function is registered as a setuptools.finalize_distribution_options
     entry point [1]. Consequently, it is called in all sorts of weird
-    contexts, so it strives to not raise unless there is a pyproject.toml
-    containing a [tool.incremental] section.
+    contexts. In setuptools, silent failure is the law.
 
     [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
 
@@ -411,10 +409,16 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
         config = _load_pyproject_toml("./pyproject.toml")
     except Exception:
         return
-    if not config or not config.opt_in:
+
+    if not config.opt_in:
         return
 
-    dist.metadata.version = _existing_version(config.path).public()
+    try:
+        version = _existing_version(config.version_path)
+    except Exception:
+        return
+
+    dist.metadata.version = version.public()
 
 
 def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, object, object) -> None
@@ -435,8 +439,8 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
 
     for item in sp_command.find_all_modules():
         if item[1] == "_version":
-            package_path = os.path.dirname(item[2])
-            dist.metadata.version = _existing_version(package_path).public()
+            version_path = os.path.join(os.path.dirname(item[2]), "_version.py")
+            dist.metadata.version = _existing_version(version_path).public()
             return
 
     raise Exception("No _version.py found.")  # pragma: no cover
@@ -475,8 +479,13 @@ class _IncrementalConfig:
     path: str
     """Path to the package root"""
 
+    @property
+    def version_path(self): # type: () -> str
+        """Path of the ``_version.py`` file. May not exist."""
+        return os.path.join(self.path, "_version.py")
 
-def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConfig]
+
+def _load_pyproject_toml(toml_path):  # type: (str) -> _IncrementalConfig
     """
     Load Incremental configuration from a ``pyproject.toml``
 
