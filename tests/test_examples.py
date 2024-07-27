@@ -97,3 +97,15 @@ class ExampleTests(TestCase):
             # Hatch may wrap the output, so we are flexible about the specifics of whitespace.
             suggestion.replace(b".", rb"\.").replace(b" ", b"\\s+"),
         )
+
+    def test_noop(self):
+        """
+        The Incremental setuptools hook is a silent no-op when there is no Incremental
+        configuration to be found.
+        """
+        build_and_install(TEST_DIR.child("example_noop"))
+
+        import example_noop
+
+        self.assertEqual(example_noop.__version__, "100")
+        self.assertEqual(metadata.version("example_noop"), "100")
