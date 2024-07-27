@@ -282,14 +282,24 @@ class VersionsTests(TestCase):
         self.assertTrue(vb == Version("whatever", 1, 0, 0, release_candidate=2, dev=1))
         self.assertTrue(va == va)
 
-    def test_infComparison(self):
+    def test_infComparisonSelf(self):
         """
         L{_inf} is equal to L{_inf}.
 
         This is a regression test.
         """
-        o = object()
         self.assertEqual(_inf, _inf)
+        self.assertFalse(_inf < _inf)
+        self.assertFalse(_inf > _inf)
+        self.assertTrue(_inf >= _inf)
+        self.assertTrue(_inf <= _inf)
+        self.assertFalse(_inf != _inf)
+
+    def test_infComparison(self):
+        """
+        L{_inf} is greater than any other object.
+        """
+        o = object()
         self.assertTrue(_inf > o)
         self.assertFalse(_inf < o)
         self.assertTrue(_inf >= o)
