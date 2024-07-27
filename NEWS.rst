@@ -1,3 +1,18 @@
+Incremental 24.7.1 (2024-07-27)
+===============================
+
+Bugfixes
+--------
+
+- Incremental 24.7.0 would produce an error when parsing the ``pyproject.toml`` of a project that lacked the ``use_incremental=True`` or ``[tool.incremental]`` opt-in markers if that file lacked a ``[project]`` section containing the package name. This could cause a project that only uses ``pyproject.toml`` to configure tools to fail to build if Incremental is installed. Incremental now ignores such projects. (`#100 <https://github.com/twisted/incremental/issues/100>`__)
+
+
+Misc
+----
+
+- `#101 <https://github.com/twisted/incremental/issues/101>`__
+
+
 Incremental 24.7.0 (2024-07-25)
 ===============================
 
