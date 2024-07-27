@@ -8,8 +8,10 @@ Tests for the packaging examples.
 import os
 from importlib import metadata
 from subprocess import run
+from tempfile import TemporaryDirectory
 
 from build import ProjectBuilder
+from build.env import DefaultIsolatedEnv
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
@@ -20,11 +22,28 @@ TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
 
 def build_and_install(path):  # type: (FilePath) -> None
-    builder = ProjectBuilder(path.path)
-    pkgfile = builder.build("wheel", output_directory=os.environ["PIP_FIND_LINKS"])
+    with TemporaryDirectory(prefix="dist") as dist_dir:
+        with DefaultIsolatedEnv(installer="pip") as env:
+            env.install(
+                {
+                    # Install the *exact* version of Incremental under test.
+                    # Otherwise pip might select a different version from
+                    # its cache.
+                    #
+                    # These are formally PEP 508 markers, so we pass a
+                    # file URL.
+                    "incremental @ file://" + os.environ["TOX_PACKAGE"],
+                    # A .pth file so that subprocess generate coverage.
+                    "coverage-p",
+                }
+            )
+            builder = ProjectBuilder.from_isolated_env(env, path.path)
+            env.install(builder.build_system_requires)
+            env.install(builder.get_requires_for_build("wheel", {}))
+            pkgfile = builder.build("wheel", output_directory=dist_dir)
 
-    # Force reinstall in case tox reused the venv.
-    run(["pip", "install", "--force-reinstall", pkgfile], check=True)
+        # Force reinstall in case tox reused the venv.
+        run(["pip", "install", "--force-reinstall", pkgfile], check=True)
 
 
 class ExampleTests(TestCase):
