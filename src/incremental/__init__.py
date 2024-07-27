@@ -404,6 +404,8 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
         but this hook is always called before setuptools loads anything
         from ``pyproject.toml``.
     """
+    # When operating in a packaging context (i.e. building an sdist or wheel)
+    # pyproject.toml will always be found in the current working directory.
     config = _load_pyproject_toml("./pyproject.toml", opt_in=False)
     if not config or not config.opt_in:
         return
@@ -487,8 +489,10 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
         affirmatively requested?
 
         Otherwise we do our best to *never* raise an exception until we
-        find a ``[tool.incremental]`` opt-in. This is useful in a setuptools
-        context because
+        find a ``[tool.incremental]`` opt-in. This is important when
+        operating within a setuptools entry point because those hooks
+        are invoked anytime the L{Distribution} class is initialized,
+        which happens in non-packaging contexts that don't match the
     """
     try:
         with open(toml_path, "rb") as f:
@@ -500,8 +504,7 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
 
     tool_incremental = _extract_tool_incremental(data, opt_in)
 
-    # Do we have an affirmative opt-in to use Incremental? Otherwise
-    # we must *never* raise exceptions.
+    # Do we have an affirmative opt-in to use Incremental?
     opt_in = opt_in or tool_incremental is not None
     if not opt_in:
         return None
