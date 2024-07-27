@@ -368,7 +368,7 @@ def _findPath(path, package):  # type: (str, str) -> str
         return current_dir
     else:
         raise ValueError(
-            "Can't find the directory of package {}: I looked in {} and {}".format(
+            "Can't find the directory of project {}: I looked in {} and {}".format(
                 package, src_dir, current_dir
             )
         )
@@ -404,9 +404,13 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
         but this hook is always called before setuptools loads anything
         from ``pyproject.toml``.
     """
-    # When operating in a packaging context (i.e. building an sdist or wheel)
-    # pyproject.toml will always be found in the current working directory.
-    config = _load_pyproject_toml("./pyproject.toml", opt_in=False)
+    try:
+        # When operating in a packaging context (i.e. building an sdist or
+        # wheel) pyproject.toml will always be found in the current working
+        # directory.
+        config = _load_pyproject_toml("./pyproject.toml")
+    except Exception:
+        return
     if not config or not config.opt_in:
         return
 
@@ -466,13 +470,13 @@ class _IncrementalConfig:
     """
 
     package: str
-    """The package name, capitalized as in the package metadata."""
+    """The project name, capitalized as in the project metadata."""
 
     path: str
     """Path to the package root"""
 
 
-def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_IncrementalConfig]
+def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConfig]
     """
     Load Incremental configuration from a ``pyproject.toml``
 
@@ -483,31 +487,11 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
 
     @param toml_path:
         Path to the ``pyproject.toml`` to load.
-
-    @param opt_in:
-        Are we operating in a context where Incremental has been
-        affirmatively requested?
-
-        Otherwise we do our best to *never* raise an exception until we
-        find a ``[tool.incremental]`` opt-in. This is important when
-        operating within a setuptools entry point because those hooks
-        are invoked anytime the L{Distribution} class is initialized,
-        which happens in non-packaging contexts that don't match the
     """
-    try:
-        with open(toml_path, "rb") as f:
-            data = _load_toml(f)
-    except Exception:
-        if opt_in:
-            raise
-        return None
+    with open(toml_path, "rb") as f:
+        data = _load_toml(f)
 
-    tool_incremental = _extract_tool_incremental(data, opt_in)
-
-    # Do we have an affirmative opt-in to use Incremental?
-    opt_in = opt_in or tool_incremental is not None
-    if not opt_in:
-        return None
+    tool_incremental = _extract_tool_incremental(data)
 
     # Extract the project name
     package = None
@@ -522,7 +506,7 @@ def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_I
     if package is None:
         # We can't proceed without a project name.
         raise ValueError("""\
-Incremental failed to extract the package name from pyproject.toml. Specify it like:
+Incremental failed to extract the project name from pyproject.toml. Specify it like:
 
     [project]
     name = "Foo"
@@ -535,33 +519,28 @@ Or:
 """)
     if not isinstance(package, str):
         raise TypeError(
-            "Package name must be a string, but found {}".format(type(package))
+            "The project name must be a string, but found {}".format(type(package))
         )
 
     return _IncrementalConfig(
-        opt_in=opt_in,
+        opt_in=tool_incremental is not None,
         package=package,
         path=_findPath(os.path.dirname(toml_path), package),
     )
 
 
-def _extract_tool_incremental(data, opt_in):  # type: (Dict[str, object], bool) -> Optional[Dict[str, object]]
+def _extract_tool_incremental(data):  # type: (Dict[str, object]) -> Optional[Dict[str, object]]
     if "tool" not in data:
         return None
     if not isinstance(data["tool"], dict):
-        if opt_in:
-            raise ValueError("[tool] must be a table")
-        return None
+        raise ValueError("[tool] must be a table")
     if "incremental" not in data["tool"]:
         return None
 
     tool_incremental = data["tool"]["incremental"]
     if not isinstance(tool_incremental, dict):
-        if opt_in:
-            raise ValueError("[tool.incremental] must be a table")
-        return None
+        raise ValueError("[tool.incremental] must be a table")
 
-    # At this point we've found a [tool.incremental] table, so we have opt_in
     if not {"name"}.issuperset(tool_incremental.keys()):
         raise ValueError("Unexpected key(s) in [tool.incremental]")
     return tool_incremental
