@@ -20,7 +20,7 @@ Deprecations and Removals
 
 - ``incremental[scripts]`` no longer depends on Twisted. (`#88 <https://github.com/twisted/incremental/issues/88>`__)
 - Support for Python 2.7 has been dropped for lack of test infrastructure. We no longer provide universal wheels. (`#86 <https://github.com/twisted/incremental/issues/86>`__)
-- Support for Python 3.5 has been dropped for lack of test infrastructure. (`#92 <https://github.com/twisted/incremental/issues/92>`__)
+- Support for Python 3.5, 3.6, and 3.7 has been dropped for lack of test infrastructure. (`#92 <https://github.com/twisted/incremental/issues/92>`__)
 
 
 Incremental 22.10.0 (2022-10-15)
