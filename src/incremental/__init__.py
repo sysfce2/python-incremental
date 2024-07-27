@@ -392,15 +392,20 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     Setuptools integration: load the version from the working directory
 
     This function is registered as a setuptools.finalize_distribution_options
-    entry point [1]. It is a no-op unless there is a pyproject.toml containing
-    an empty [tool.incremental] section.
+    entry point [1]. Consequently, it is called in all sorts of weird
+    contexts, so it strives to not raise unless there is a pyproject.toml
+    containing a [tool.incremental] section.
 
-    @param dist: An empty C{setuptools.Distribution} instance to mutate.
+    @param dist:
+        A (possibly) empty C{setuptools.Distribution} instance to mutate.
+        There may be some metadata here if a `setup.py` called `setup()`,
+        but this hook is always called before setuptools loads anything
+        from ``pyproject.toml``.
 
     [1]: https://setuptools.pypa.io/en/latest/userguide/extension.html#customizing-distribution-options
     """
-    config = _load_pyproject_toml("./pyproject.toml")
-    if not config or not config.has_tool_incremental:
+    config = _load_pyproject_toml("./pyproject.toml", opt_in=False)
+    if not config or not config.opt_in:
         return
 
     dist.metadata.version = _existing_version(config.path).public()
@@ -451,7 +456,7 @@ class _IncrementalConfig:
     Configuration loaded from a ``pyproject.toml`` file.
     """
 
-    has_tool_incremental: bool
+    opt_in: bool
     """
     Does the pyproject.toml file contain a [tool.incremental]
     section? This indicates that the package has explicitly
@@ -465,7 +470,7 @@ class _IncrementalConfig:
     """Path to the package root"""
 
 
-def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConfig]
+def _load_pyproject_toml(toml_path, opt_in):  # type: (str, bool) -> Optional[_IncrementalConfig]
     """
     Load Incremental configuration from a ``pyproject.toml``
 
@@ -473,19 +478,37 @@ def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConf
     from the [project] section. Otherwise we require only a C{name} key
     specifying the project name. Other keys are forbidden to allow future
     extension and catch typos.
+
+    @param toml_path:
+        Path to the ``pyproject.toml`` to load.
+
+    @param opt_in:
+        Are we operating in a context where Incremental has been
+        affirmatively requested?
+
+        Otherwise we do our best to *never* raise an exception until we
+        find a ``[tool.incremental]`` opt-in. This is useful in a setuptools
+        context because
     """
     try:
         with open(toml_path, "rb") as f:
             data = _load_toml(f)
-    except FileNotFoundError:
+    except Exception:
+        if opt_in:
+            raise
         return None
 
-    tool_incremental = _extract_tool_incremental(data)
+    tool_incremental = _extract_tool_incremental(data, opt_in)
+
+    # Do we have an affirmative opt-in to use Incremental? Otherwise
+    # we must *never* raise exceptions.
+    opt_in = opt_in or tool_incremental is not None
 
     package = None
     if tool_incremental is not None and "name" in tool_incremental:
         package = tool_incremental["name"]
     if package is None:
+        # Try to fall back to [project]
         try:
             package = data["project"]["name"]
         except KeyError:
@@ -493,10 +516,9 @@ def _load_pyproject_toml(toml_path):  # type: (str) -> Optional[_IncrementalConf
     if package is None:
         # We can't proceed without a project name, but that's only an error
         # if [tool.incremental] is present.
-        if tool_incremental is None:
-            return None
-        raise ValueError("""\
-Couldn't extract the package name from pyproject.toml. Specify it like:
+        if opt_in:
+            raise ValueError("""\
+Incremental faied to extract the package name from pyproject.toml. Specify it like:
 
     [project]
     name = "Foo"
@@ -507,30 +529,49 @@ Or:
     name = "Foo"
 
 """)
+        else:
+            return None
+
     if not isinstance(package, str):
-        raise TypeError(
-            "Package name must be a string, but found {}".format(type(package))
-        )
+        if opt_in:
+            raise TypeError(
+                "Package name must be a string, but found {}".format(type(package))
+            )
+        else:
+            return None
+
+    try:
+        path = _findPath(os.path.dirname(toml_path), package)
+    except ValueError:
+        if opt_in:
+            raise
+        else:
+            return None
 
     return _IncrementalConfig(
-        has_tool_incremental=tool_incremental is not None,
+        opt_in=opt_in,
         package=package,
-        path=_findPath(os.path.dirname(toml_path), package),
+        path=path,
     )
 
 
-def _extract_tool_incremental(data):  # type: (Dict[str, object]) -> Optional[Dict[str, object]]
+def _extract_tool_incremental(data, opt_in):  # type: (Dict[str, object], bool) -> Optional[Dict[str, object]]
     if "tool" not in data:
         return None
     if not isinstance(data["tool"], dict):
-        raise ValueError("[tool] must be a table")
+        if opt_in:
+            raise ValueError("[tool] must be a table")
+        return None
     if "incremental" not in data["tool"]:
         return None
 
     tool_incremental = data["tool"]["incremental"]
     if not isinstance(tool_incremental, dict):
-        raise ValueError("[tool.incremental] must be a table")
+        if opt_in:
+            raise ValueError("[tool.incremental] must be a table")
+        return None
 
+    # At this point we've found a [tool.incremental] table, so we have opt_in
     if not {"name"}.issuperset(tool_incremental.keys()):
         raise ValueError("Unexpected key(s) in [tool.incremental]")
     return tool_incremental

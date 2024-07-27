@@ -15,7 +15,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
     """Test the `_load_pyproject_toml` helper function"""
 
     def _loadToml(
-        self, toml: str, *, path: Union[Path, str, None] = None
+        self, toml: str, opt_in: bool, *, path: Union[Path, str, None] = None
     ) -> Optional[_IncrementalConfig]:
         """
         Read a TOML snipped from a temporary file with `_load_pyproject_toml`
@@ -34,7 +34,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
             f.write(toml)
 
         try:
-            return _load_pyproject_toml(path_)
+            return _load_pyproject_toml(path_, opt_in)
         except Exception as e:
             if hasattr(e, "add_note"):
                 e.add_note(  # type: ignore[attr-defined]
@@ -44,48 +44,72 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_fileNotFound(self):
         """
-        An absent ``pyproject.toml`` file produces no result
+        An absent ``pyproject.toml`` file produces no result unless
+        there is opt-in.
         """
         path = os.path.join(cast(str, self.mktemp()), "pyproject.toml")
-        self.assertIsNone(_load_pyproject_toml(path))
+        self.assertIsNone(_load_pyproject_toml(path, False))
+        self.assertRaises(FileNotFoundError, _load_pyproject_toml, path, True)
+
+    def test_brokenToml(self):
+        """
+        Syntactially invalid TOML is ignored unless there's an opt-in.
+        """
+        toml = '[project]\nname = "abc'  # truncated
+
+        self.assertIsNone(self._loadToml(toml, False))
+        self.assertRaises(Exception, self._loadToml, toml, True)
 
     def test_configMissing(self):
         """
         A ``pyproject.toml`` that exists but provides no relevant configuration
-        is ignored.
+        is ignored unless opted in.
         """
         for toml in [
             "\n",
             "[tool.notincremental]\n",
             "[project]\n",
         ]:
-            self.assertIsNone(self._loadToml(toml))
+            self.assertIsNone(self._loadToml(toml, False))
 
     def test_nameMissing(self):
         """
         `ValueError` is raised when ``[tool.incremental]`` is present but
-        the project name isn't available.
+        the project name isn't available. The ``[tool.incremental]``
+        section counts as opt-in.
         """
         for toml in [
             "[tool.incremental]\n",
             "[project]\n[tool.incremental]\n",
         ]:
-            self.assertRaises(ValueError, self._loadToml, toml)
+            self.assertRaises(ValueError, self._loadToml, toml, False)
+            self.assertRaises(ValueError, self._loadToml, toml, True)
 
-    def test_nameInvalid(self):
+    def test_nameInvalidNoOptIn(self):
         """
-        `TypeError` is raised when the project name isn't a string.
+        An invalid project name is ignored when there's no opt-in.
+        """
+        self.assertIsNone(
+            self._loadToml("[project]\nname = false\n", False),
+        )
+
+    def test_nameInvalidOptIn(self):
+        """
+        Once opted in, `TypeError` is raised when the project name
+        isn't a string.
         """
         for toml in [
+            "[project]\nname = false\n",
             "[tool.incremental]\nname = -1\n",
             "[tool.incremental]\n[project]\nname = 1.0\n",
         ]:
-            self.assertRaises(TypeError, self._loadToml, toml)
+            self.assertRaises(TypeError, self._loadToml, toml, True)
 
     def test_toolIncrementalInvalid(self):
         """
-        `ValueError` is raised when the ``[tool]`` or ``[tool.incremental]``
-        isn't a table.
+        When ``[tool]`` or ``[tool.incremental]`` isn't a table the
+        ``pyproject.toml`` it's an error if opted-in, otherwise the
+        file is ignored.
         """
         for toml in [
             "tool = false\n",
@@ -93,7 +117,8 @@ class VerifyPyprojectDotTomlTests(TestCase):
             "[tool]\nincremental = 123\n",
             "[tool]\nincremental = null\n",
         ]:
-            self.assertRaises(ValueError, self._loadToml, toml)
+            self.assertIsNone(self._loadToml(toml, False))
+            self.assertRaises(ValueError, self._loadToml, toml, True)
 
     def test_toolIncrementalUnexpecteKeys(self):
         """
@@ -104,7 +129,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
             "[tool.incremental]\nfoo = false\n",
             '[tool.incremental]\nname = "OK"\nother = false\n',
         ]:
-            self.assertRaises(ValueError, self._loadToml, toml)
+            self.assertRaises(ValueError, self._loadToml, toml, False)
 
     def test_setuptoolsOptIn(self):
         """
@@ -120,12 +145,12 @@ class VerifyPyprojectDotTomlTests(TestCase):
             '[project]\nname = "Foo"\n[tool.incremental]\n',
             '[tool.incremental]\nname = "Foo"\n',
         ]:
-            config = self._loadToml(toml, path=root / "pyproject.toml")
+            config = self._loadToml(toml, False, path=root / "pyproject.toml")
 
             self.assertEqual(
                 config,
                 _IncrementalConfig(
-                    has_tool_incremental=True,
+                    opt_in=True,
                     package="Foo",
                     path=str(pkg),
                 ),
@@ -133,8 +158,8 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_noToolIncrementalSection(self):
         """
-        The ``has_tool_incremental`` flag is false when there
-        isn't a ``[tool.incremental]`` section.
+        The ``opt_in`` flag is false when there isn't a
+        ``[tool.incremental]`` section.
         """
         root = Path(self.mktemp())
         pkg = root / "foo"
@@ -142,13 +167,14 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
         config = self._loadToml(
             '[project]\nname = "foo"\n',
+            opt_in=False,
             path=root / "pyproject.toml",
         )
 
         self.assertEqual(
             config,
             _IncrementalConfig(
-                has_tool_incremental=False,
+                opt_in=False,
                 package="foo",
                 path=str(pkg),
             ),
