@@ -86,7 +86,7 @@ jobs:
         tox --parallel 2 --installpkg dist/*.whl
 
     - name: Publish API docs
-      if: contains(matrix['tox-env'], 'apidocs')
+      if: contains(matrix['tox-env'], 'apidocs') && github.ref == 'refs/heads/trunk'
       uses: ./.github/actions/publish-docs
 
     - name: Prepare coverage results
