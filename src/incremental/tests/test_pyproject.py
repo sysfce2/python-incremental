@@ -52,9 +52,10 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_brokenToml(self):
         """
-        Syntactially invalid TOML is ignored unless there's an opt-in.
+        Syntactially invalid TOML produces an exception. The specific
+        exception varies by the underlying TOML library.
         """
-        toml = '[project]\nname = "abc'  # truncated
+        toml = '[project]\nname = "abc'  # Truncated string.
         self.assertRaises(Exception, self._loadToml, toml)
 
     def test_nameMissing(self):
@@ -72,8 +73,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_nameInvalidOptIn(self):
         """
-        Once opted in, `TypeError` is raised when the project name
-        isn't a string.
+        `TypeError` is raised when the project name isn't a string.
         """
         for toml in [
             "[project]\nname = false\n",
@@ -85,9 +85,8 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_toolIncrementalInvalid(self):
         """
-        When ``[tool]`` or ``[tool.incremental]`` isn't a table the
-        ``pyproject.toml`` it's an error if opted-in, otherwise the
-        file is ignored.
+        `ValueError` is raised when the ``[tool]`` or ``[tool.incremental]``
+        isn't a table.
         """
         for toml in [
             "tool = false\n",
