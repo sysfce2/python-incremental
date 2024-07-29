@@ -415,7 +415,7 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
 
     try:
         version = _existing_version(config.version_path)
-    except Exception:
+    except FileNotFoundError:
         return
 
     dist.metadata.version = version.public()
@@ -480,7 +480,7 @@ class _IncrementalConfig:
     """Path to the package root"""
 
     @property
-    def version_path(self): # type: () -> str
+    def version_path(self):  # type: () -> str
         """Path of the ``_version.py`` file. May not exist."""
         return os.path.join(self.path, "_version.py")
 

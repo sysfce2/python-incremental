@@ -10,7 +10,7 @@ from importlib import metadata
 from subprocess import run
 from tempfile import TemporaryDirectory
 
-from build import ProjectBuilder
+from build import ProjectBuilder, BuildBackendException
 from build.env import DefaultIsolatedEnv
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
@@ -116,10 +116,44 @@ version = "0.0.0"
 
         self.assertEqual(metadata.version("example_no_package"), "0.0.0")
 
+    def test_setuptools_missing_versionpy(self):
+        """
+        The setuptools plugin is a no-op when the ``_version.py`` file
+        isn't present.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("setup.py").setContent(
+            b"""\
+from setuptools import setup
+
+setup(
+    name="example_missing_versionpy",
+    version="0.0.1",
+    packages=["example_missing_versionpy"],
+    zip_safe=False,
+)
+"""
+        )
+        src.child("pyproject.toml").setContent(
+            b"""\
+[tool.incremental]
+name = "example_missing_versionpy"
+"""
+        )
+        package_dir = src.child("example_missing_versionpy")
+        package_dir.makedirs()
+        package_dir.child("__init__.py").setContent(b"")
+        # No _version.py exists
+
+        build_and_install(src)
+
+        # The version from setup.py wins.
+        self.assertEqual(metadata.version("example_missing_versionpy"), "0.0.1")
+
     def test_setuptools_bad_versionpy(self):
         """
-        The setuptools plugin is a no-op when reading the version
-        from ``_version.py`` fails.
+        The setuptools plugin surfaces syntax errors in ``_version.py``.
         """
         src = FilePath(self.mktemp())
         src.makedirs()
@@ -145,10 +179,9 @@ name = "example_bad_versionpy"
         package_dir.makedirs()
         package_dir.child("_version.py").setContent(b"bad version.py")
 
-        build_and_install(src)
-
-        # The version from setup.py wins.
-        self.assertEqual(metadata.version("example_bad_versionpy"), "0.1.2")
+        with self.assertRaises(BuildBackendException):
+            # This also spews a SyntaxError traceback to stdout.
+            build_and_install(src)
 
     def test_hatchling_get_version(self):
         """
