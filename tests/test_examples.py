@@ -8,8 +8,10 @@ Tests for the packaging examples.
 import os
 from importlib import metadata
 from subprocess import run
+from tempfile import TemporaryDirectory
 
-from build import ProjectBuilder
+from build import ProjectBuilder, BuildBackendException
+from build.env import DefaultIsolatedEnv
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
@@ -20,11 +22,28 @@ TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
 
 def build_and_install(path):  # type: (FilePath) -> None
-    builder = ProjectBuilder(path.path)
-    pkgfile = builder.build("wheel", output_directory=os.environ["PIP_FIND_LINKS"])
+    with TemporaryDirectory(prefix="dist") as dist_dir:
+        with DefaultIsolatedEnv(installer="pip") as env:
+            env.install(
+                {
+                    # Install the *exact* version of Incremental under test.
+                    # Otherwise pip might select a different version from
+                    # its cache.
+                    #
+                    # These are formally PEP 508 markers, so we pass a
+                    # file URL.
+                    "incremental @ file://" + os.environ["TOX_PACKAGE"],
+                    # A .pth file so that subprocess generate coverage.
+                    "coverage-p",
+                }
+            )
+            builder = ProjectBuilder.from_isolated_env(env, path.path)
+            env.install(builder.build_system_requires)
+            env.install(builder.get_requires_for_build("wheel", {}))
+            pkgfile = builder.build("wheel", output_directory=dist_dir)
 
-    # Force reinstall in case tox reused the venv.
-    run(["pip", "install", "--force-reinstall", pkgfile], check=True)
+        # Force reinstall in case tox reused the venv.
+        run(["pip", "install", "--force-reinstall", pkgfile], check=True)
 
 
 class ExampleTests(TestCase):
@@ -49,6 +68,120 @@ class ExampleTests(TestCase):
 
         self.assertEqual(example_setuptools.__version__.base(), "2.3.4")
         self.assertEqual(metadata.version("example_setuptools"), "2.3.4")
+
+    def test_setuptools_no_optin(self):
+        """
+        The setuptools plugin is a no-op when there isn't a
+        [tool.incremental] table in pyproject.toml.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("pyproject.toml").setContent(
+            b"""\
+[project]
+name = "example_no_optin"
+version = "0.0.0"
+"""
+        )
+        package_dir = src.child("example_no_optin")
+        package_dir.makedirs()
+        package_dir.child("__init__.py").setContent(b"")
+        package_dir.child("_version.py").setContent(
+            b"from incremental import Version\n"
+            b'__version__ = Version("example_no_optin", 24, 7, 0)\n'
+        )
+
+        build_and_install(src)
+
+        self.assertEqual(metadata.version("example_no_optin"), "0.0.0")
+
+    def test_setuptools_no_package(self):
+        """
+        The setuptools plugin is a no-op when there isn't a
+        package directory that matches the project name.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("pyproject.toml").setContent(
+            b"""\
+[project]
+name = "example_no_package"
+version = "0.0.0"
+
+[tool.incremental]
+"""
+        )
+
+        build_and_install(src)
+
+        self.assertEqual(metadata.version("example_no_package"), "0.0.0")
+
+    def test_setuptools_missing_versionpy(self):
+        """
+        The setuptools plugin is a no-op when the ``_version.py`` file
+        isn't present.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("setup.py").setContent(
+            b"""\
+from setuptools import setup
+
+setup(
+    name="example_missing_versionpy",
+    version="0.0.1",
+    packages=["example_missing_versionpy"],
+    zip_safe=False,
+)
+"""
+        )
+        src.child("pyproject.toml").setContent(
+            b"""\
+[tool.incremental]
+name = "example_missing_versionpy"
+"""
+        )
+        package_dir = src.child("example_missing_versionpy")
+        package_dir.makedirs()
+        package_dir.child("__init__.py").setContent(b"")
+        # No _version.py exists
+
+        build_and_install(src)
+
+        # The version from setup.py wins.
+        self.assertEqual(metadata.version("example_missing_versionpy"), "0.0.1")
+
+    def test_setuptools_bad_versionpy(self):
+        """
+        The setuptools plugin surfaces syntax errors in ``_version.py``.
+        """
+        src = FilePath(self.mktemp())
+        src.makedirs()
+        src.child("setup.py").setContent(
+            b"""\
+from setuptools import setup
+
+setup(
+    name="example_bad_versionpy",
+    version="0.1.2",
+    packages=["example_bad_versionpy"],
+    zip_safe=False,
+)
+"""
+        )
+        src.child("pyproject.toml").setContent(
+            b"""\
+[tool.incremental]
+name = "example_bad_versionpy"
+"""
+        )
+        package_dir = src.child("example_bad_versionpy")
+        package_dir.makedirs()
+        package_dir.child("_version.py").setContent(b"bad version.py")
+
+        with self.assertRaises(BuildBackendException):
+            # This also spews a SyntaxError traceback to stdout.
+            build_and_install(src)
 
     def test_hatchling_get_version(self):
         """

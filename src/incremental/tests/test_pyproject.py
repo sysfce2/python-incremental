@@ -44,43 +44,44 @@ class VerifyPyprojectDotTomlTests(TestCase):
 
     def test_fileNotFound(self):
         """
-        An absent ``pyproject.toml`` file produces no result
+        An absent ``pyproject.toml`` file produces no result unless
+        there is opt-in.
         """
         path = os.path.join(cast(str, self.mktemp()), "pyproject.toml")
-        self.assertIsNone(_load_pyproject_toml(path))
+        self.assertRaises(FileNotFoundError, _load_pyproject_toml, path)
 
-    def test_configMissing(self):
+    def test_brokenToml(self):
         """
-        A ``pyproject.toml`` that exists but provides no relevant configuration
-        is ignored.
+        Syntactially invalid TOML produces an exception. The specific
+        exception varies by the underlying TOML library.
+        """
+        toml = '[project]\nname = "abc'  # Truncated string.
+        self.assertRaises(Exception, self._loadToml, toml)
+
+    def test_nameMissing(self):
+        """
+        `ValueError` is raised when we can't extract the project name.
         """
         for toml in [
             "\n",
             "[tool.notincremental]\n",
             "[project]\n",
-        ]:
-            self.assertIsNone(self._loadToml(toml))
-
-    def test_nameMissing(self):
-        """
-        `ValueError` is raised when ``[tool.incremental]`` is present but
-        the project name isn't available.
-        """
-        for toml in [
             "[tool.incremental]\n",
             "[project]\n[tool.incremental]\n",
         ]:
             self.assertRaises(ValueError, self._loadToml, toml)
 
-    def test_nameInvalid(self):
+    def test_nameInvalidOptIn(self):
         """
         `TypeError` is raised when the project name isn't a string.
         """
         for toml in [
+            "[project]\nname = false\n",
             "[tool.incremental]\nname = -1\n",
             "[tool.incremental]\n[project]\nname = 1.0\n",
         ]:
-            self.assertRaises(TypeError, self._loadToml, toml)
+            with self.assertRaisesRegex(TypeError, "The project name must be a string"):
+                self._loadToml(toml)
 
     def test_toolIncrementalInvalid(self):
         """
@@ -125,31 +126,44 @@ class VerifyPyprojectDotTomlTests(TestCase):
             self.assertEqual(
                 config,
                 _IncrementalConfig(
-                    has_tool_incremental=True,
+                    opt_in=True,
                     package="Foo",
                     path=str(pkg),
                 ),
             )
 
-    def test_noToolIncrementalSection(self):
+    def test_packagePathRequired(self):
         """
-        The ``has_tool_incremental`` flag is false when there
-        isn't a ``[tool.incremental]`` section.
+        Raise `ValueError` when the package root can't be resolved.
         """
         root = Path(self.mktemp())
-        pkg = root / "foo"
+        root.mkdir()  # Contains no package directory.
+
+        with self.assertRaisesRegex(ValueError, "Can't find the directory of project "):
+            self._loadToml(
+                '[project]\nname = "foo"\n',
+                path=root / "pyproject.toml",
+            )
+
+    def test_noToolIncrementalSection(self):
+        """
+        The ``[tool.incremental]`` table is not strictly required, but its
+        ``opt_in=False`` indicates its absence.
+        """
+        root = Path(self.mktemp())
+        pkg = root / "src" / "foo"
         pkg.mkdir(parents=True)
 
         config = self._loadToml(
-            '[project]\nname = "foo"\n',
+            '[project]\nname = "Foo"\n',
             path=root / "pyproject.toml",
         )
 
         self.assertEqual(
             config,
             _IncrementalConfig(
-                has_tool_incremental=False,
-                package="foo",
+                opt_in=False,
+                package="Foo",
                 path=str(pkg),
             ),
         )
