@@ -1,3 +1,14 @@
+Incremental 24.7.2 (2024-07-29)
+===============================
+
+Bugfixes
+--------
+
+- Incremental could mis-identify that a project had opted in to version management.
+
+  If a ``pyproject.toml`` in the current directory contained a ``[project]`` table with a ``name`` key, but did not contain the opt-in ``[tool.incremental]`` table, Incremental would still treat the file as if the opt-in were present and attempt to validate the configuration. This could happen in contexts outside of packaging, such as when creating a virtualenv. When operating as a setuptools plugin Incremental now always ignores invalid configuration, such as configuration that doesn't match the content of the working directory. (`#106 <https://github.com/twisted/incremental/issues/106>`__)
+
+
 Incremental 24.7.1 (2024-07-27)
 ===============================
 
