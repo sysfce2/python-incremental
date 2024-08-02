@@ -1,8 +1,9 @@
 Incremental
 ===========
 
-|gha|
 |pypi|
+|calver|
+|gha|
 |coverage|
 
 Incremental is a small library that versions your Python projects.
@@ -30,13 +31,13 @@ Add Incremental to your ``pyproject.toml``:
 
     [project]
     name = "<projectname>"
-    dynamic = ["version"]     # ← Mark the version dynamic
+    dynamic = ["version"]       # ← Mark the version dynamic
     dependencies = [
         "incremental>=24.7.2",  # ← Depend on incremental at runtime
     ]
     # ...
 
-    [tool.incremental]        # ← Activate Incremental's setuptools plugin
+    [tool.incremental]          # ← Activate Incremental's setuptools plugin
 
 It's fine if the ``[tool.incremental]`` table is empty, but it must be present.
 
@@ -61,14 +62,14 @@ activate Incremental's Hatchling plugin by altering your ``pyproject.toml``:
 
     [project]
     name = "<projectname>"
-    dynamic = ["version"]     # ← Mark the version dynamic
+    dynamic = ["version"]       # ← Mark the version dynamic
     dependencies = [
         "incremental>=24.7.2",  # ← Depend on incremental at runtime
     ]
     # ...
 
     [tool.hatch.version]
-    source = "incremental"    # ← Activate Incremental's Hatchling plugin
+    source = "incremental"      # ← Activate Incremental's Hatchling plugin
 
 Incremental can be configured as usual in an optional ``[tool.incremental]`` table.
 
@@ -173,11 +174,17 @@ Once the final version is made, it will become:
 - ``<projectname> 17.1.0``
 
 
-.. |coverage| image:: https://codecov.io/gh/twisted/incremental/branch/master/graph/badge.svg?token=K2ieeL887X
-.. _coverage: https://codecov.io/gh/twisted/incremental
+.. |pypi| image:: http://img.shields.io/pypi/v/incremental.svg
+    :alt: PyPI
+    :target: https://pypi.python.org/pypi/incremental
+
+.. |calver| image:: https://img.shields.io/badge/calver-YY.MM.MICRO-22bfda.svg
+    :alt: calver: YY.MM.MICRO
+    :target: https://calver.org/
 
 .. |gha| image:: https://github.com/twisted/incremental/actions/workflows/tests.yaml/badge.svg
-.. _gha: https://github.com/twisted/incremental/actions/workflows/tests.yaml
+    :alt: Tests
+    :target: https://github.com/twisted/incremental/actions/workflows/tests.yaml
 
-.. |pypi| image:: http://img.shields.io/pypi/v/incremental.svg
-.. _pypi: https://pypi.python.org/pypi/incremental
+.. |coverage| image:: https://img.shields.io/badge/Coverage-100%25-green
+    :alt: Coverage: 100%
