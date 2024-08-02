@@ -19,7 +19,7 @@ Theory of Operation
 - A version number has the form YY.MM.PATCH.
 - If your project is named "Shrubbery", its code is found in ``shrubbery/`` or ``src/shrubbery/``.
 - Incremental stores your project's version number in ``{src/}shrubbery/_version.py``.
-- To update the version, run ``python -m incremental.update Shrubbery``, passing ``--rc`` and/or ``--patch`` as appropriate (see `Updating`_, below).
+- To update the version, run ``incremental update Shrubbery``, passing ``--rc`` and/or ``--patch`` as appropriate (see `Updating`_, below).
 - Changing the version also updates any `indeterminate versions`_ in your codebase, like "Shrubbery NEXT", so you can reference the upcoming release in documentation.
   That's how Incremental supports the future.
 
@@ -86,7 +86,7 @@ activate Incremental's Hatchling plugin by altering your ``pyproject.toml``:
 Incremental can be configured as usual in an optional ``[tool.incremental]`` table.
 
 The ``hatch version`` command will report the Incremental-managed version.
-Use the ``python -m incremental.update`` command to change the version (setting it with ``hatch version`` is not supported).
+Use the ``incremental update`` command to change the version (setting it with ``hatch version`` is not supported).
 
 Next, `initialize the project`_.
 
@@ -112,8 +112,8 @@ Then `initialize the project`_.
 Initialize the project
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Install Incremental to your local environment with ``pip install incremental[scripts]``.
-Then run ``python -m incremental.update <projectname> --create``.
+Install Incremental to your local environment with ``pipx install incremental``.
+Then run ``incremental update <projectname> --create``.
 It will create a file in your package named ``_version.py`` like this:
 
 .. code:: python
@@ -124,15 +124,26 @@ It will create a file in your package named ``_version.py`` like this:
    __all__ = ["__version__"]
 
 
-Then, so users of your project can find your version, in your root package's ``__init__.py`` add:
+Subsequent installations of your project will then use Incremental for versioning.
+
+
+Runtime integration
+~~~~~~~~~~~~~~~~~~~
+
+You may expose the ``incremental.Version`` from ``_version.py`` in your package's API.
+To do so, add to your root package's ``__init__.py``:
 
 .. code:: python
 
    from ._version import __version__
 
+.. note::
 
-Subsequent installations of your project will then use Incremental for versioning.
+    Providing a ``__version__`` attribute is falling out of fashion following the introduction of `importlib.metadata.version() <https://docs.python.org/3/library/importlib.metadata.html#distribution-versions>`_ in Python 3.6, which can retrieve an installed package's version.
 
+If you don't expose this object publicly, nor make use of it within your package,
+then there is no need to depend on Incremental at runtime.
+You can remove it from your project's ``dependencies`` array (or, in ``setup.py``, from ``install_requires``).
 
 
 Incremental Versions
@@ -155,12 +166,12 @@ Calling ``repr()`` with a ``Version`` will give a Python-source-code representat
 Updating
 --------
 
-Incremental includes a tool to automate updating your Incremental-using project's version called ``incremental.update``.
+Incremental includes a tool to automate updating your Incremental-using project's version called ``incremental``.
 It updates the ``_version.py`` file and automatically updates some uses of Incremental versions from an indeterminate version to the current one.
 It requires ``click`` from PyPI.
 
-``python -m incremental.update <projectname>`` will perform updates on that package.
-The commands that can be given after that will determine what the next version is.
+``incremental update <projectname>`` will perform updates on that package.
+The commands that can be given after that determine what the next version is.
 
 - ``--newversion=<version>``, to set the project version to a fully-specified version (like 1.2.3, or 17.1.0dev1).
 - ``--rc``, to set the project version to ``<year-2000>.<month>.0rc1`` if the current version is not a release candidate, or bump the release candidate number by 1 if it is.
@@ -178,7 +189,7 @@ Incremental supports "indeterminate" versions, as a stand-in for the next "full"
 - ``Version("<projectname>", "NEXT", 0, 0)``
 - ``<projectname> NEXT``
 
-When you run ``python -m incremental.update <projectname> --rc``, these will be updated to real versions (assuming the target final version is 17.1.0):
+When you run ``incremental update <projectname> --rc``, these will be updated to real versions (assuming the target final version is 17.1.0):
 
 - ``Version("<projectname>", 17, 1, 0, release_candidate=1)``
 - ``<projectname> 17.1.0rc1``

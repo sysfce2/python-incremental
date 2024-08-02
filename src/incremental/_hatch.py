@@ -24,10 +24,12 @@ class IncrementalVersionSource(VersionSourceInterface):
         return {"version": _existing_version(config.version_path).public()}
 
     def set_version(self, version: str, version_data: Dict[Any, Any]) -> None:
+        path = os.path.join(self.root, "./pyproject.toml")  # TODO: #111 Delete this.
+        config = _load_pyproject_toml(path)
         raise NotImplementedError(
-            f"Run `python -m incremental.version --newversion"
+            f"Run `incremental update {shlex.quote(config.package)} --newversion"
             f" {shlex.quote(version)}` to set the version.\n\n"
-            f" See `python -m incremental.version --help` for more options."
+            f" See `incremental --help` for more options."
         )
 
 
