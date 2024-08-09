@@ -6,7 +6,7 @@ Incremental
 |gha|
 |coverage|
 
-Incremental is a small library for versioning Python projects using `CalVer <https://calver.org/>`_.
+Incremental is a `CalVer <https://calver.org/>`_ version manager supports the future.
 
 API documentation can be found `here <https://twisted.org/incremental/docs/>`_.
 Narrative documentation follows.
@@ -17,12 +17,12 @@ Theory of Operation
 -------------------
 
 - A version number has the form YY.MM.PATCH.
-- If your project is named "Shrubbery", its code is found in ``shrubbery/`` or ``src/shrubbery``.
+- If your project is named "Shrubbery", its code is found in ``shrubbery/`` or ``src/shrubbery/``.
 - Incremental stores your project's version number in ``{src/}shrubbery/_version.py``.
 - To update the version, run ``python -m incremental.update Shrubbery``, passing ``--rc`` and/or ``--patch`` as appropriate (see `Updating`_, below).
 - Changing the version also updates any `indeterminate versions`_ in your codebase, like "Shrubbery NEXT", so you can reference the upcoming release in documentation.
+  That's how Incremental supports the future.
 
-In short: a CalVer version manager that lets you talk about the future.
 
 Quick Start
 -----------
