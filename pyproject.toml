@@ -12,6 +12,7 @@ name = "incremental"
 dynamic = ["version"]
 maintainers = [
     {name = "Amber Brown", email = "hawkowl@twistedmatrix.com"},
+    {name = "Tom Most", email = "twm@freecog.net"},
 ]
 classifiers = [
     "Intended Audience :: Developers",
@@ -26,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 requires-python = ">=3.8"
-description = "A small library that versions your Python projects."
+description = "A small library for versioning Python projects using CalVer."
 readme = "README.rst"
 dependencies = [
     "setuptools >= 61.0",
