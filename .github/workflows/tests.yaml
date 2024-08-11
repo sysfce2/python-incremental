@@ -17,6 +17,9 @@ on:
 
 permissions:
   contents: read
+  # Required to publish to Pages:
+  pages: write
+  id-token: write
 
 
 defaults:
@@ -82,22 +85,9 @@ jobs:
         # GitHub Actions VM have 2 CPUs.
         tox --parallel 2 --installpkg dist/*.whl
 
-    - name: Prepare GitHub Pages
-      if: contains(matrix['tox-env'], 'apidocs')
-      run: |
-        mkdir website
-        touch website/index.html
-        mv apidocs website/docs
-
-    - name: Publish documentation for push on trunk
-      # Since we don't have a separate job for apidocs gh-pages updating
-      # hijack the normal apidoc test and publish the resulting files.
-      if: contains(matrix['tox-env'], 'apidocs') && github.event_name == 'push'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        commit_message: Publish docs for ${{ github.sha }}
-        publish_dir: ./website
+    - name: Publish API docs
+      if: contains(matrix['tox-env'], 'apidocs') && github.ref == 'refs/heads/trunk'
+      uses: ./.github/actions/publish-docs
 
     - name: Prepare coverage results
       if: ${{ !cancelled() && !matrix.skip-coverage }}

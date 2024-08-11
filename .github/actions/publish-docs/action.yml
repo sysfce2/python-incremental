@@ -1,0 +1,29 @@
+name: Publish API docs
+
+outputs:
+  docs_url:
+    description: "Deployed URL"
+    value: ${{ steps.deployment.outputs.page_url }}/docs/
+
+runs:
+  using: "composite"
+
+  steps:
+
+  - name: Prepare GitHub Pages
+    run: |
+      mkdir website
+      cat >website/index.html <<!
+        <DOCTYPE html>
+        <meta http-equiv="refresh" content="0;URL=./docs/">
+        <a href="./docs/">Click here if not redirected</a>
+      !
+      mv apidocs website/docs
+    shell: bash
+
+  - uses: actions/upload-pages-artifact@v3
+    with:
+      path: website
+
+  - uses: actions/deploy-pages@v4
+    id: deployment
