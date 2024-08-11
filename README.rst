@@ -1,15 +1,28 @@
 Incremental
 ===========
 
-|gha|
 |pypi|
+|calver|
+|gha|
 |coverage|
 
-Incremental is a small library that versions your Python projects.
+Incremental is a `CalVer <https://calver.org/>`_ version manager supports the future.
 
 API documentation can be found `here <https://twisted.org/incremental/docs/>`_.
+Narrative documentation follows.
 
 .. contents::
+
+Theory of Operation
+-------------------
+
+- A version number has the form YY.MM.PATCH.
+- If your project is named "Shrubbery", its code is found in ``shrubbery/`` or ``src/shrubbery/``.
+- Incremental stores your project's version number in ``{src/}shrubbery/_version.py``.
+- To update the version, run ``python -m incremental.update Shrubbery``, passing ``--rc`` and/or ``--patch`` as appropriate (see `Updating`_, below).
+- Changing the version also updates any `indeterminate versions`_ in your codebase, like "Shrubbery NEXT", so you can reference the upcoming release in documentation.
+  That's how Incremental supports the future.
+
 
 Quick Start
 -----------
@@ -30,13 +43,13 @@ Add Incremental to your ``pyproject.toml``:
 
     [project]
     name = "<projectname>"
-    dynamic = ["version"]     # ← Mark the version dynamic
+    dynamic = ["version"]       # ← Mark the version dynamic
     dependencies = [
         "incremental>=24.7.2",  # ← Depend on incremental at runtime
     ]
     # ...
 
-    [tool.incremental]        # ← Activate Incremental's setuptools plugin
+    [tool.incremental]          # ← Activate Incremental's setuptools plugin
 
 It's fine if the ``[tool.incremental]`` table is empty, but it must be present.
 
@@ -61,14 +74,14 @@ activate Incremental's Hatchling plugin by altering your ``pyproject.toml``:
 
     [project]
     name = "<projectname>"
-    dynamic = ["version"]     # ← Mark the version dynamic
+    dynamic = ["version"]       # ← Mark the version dynamic
     dependencies = [
         "incremental>=24.7.2",  # ← Depend on incremental at runtime
     ]
     # ...
 
     [tool.hatch.version]
-    source = "incremental"    # ← Activate Incremental's Hatchling plugin
+    source = "incremental"      # ← Activate Incremental's Hatchling plugin
 
 Incremental can be configured as usual in an optional ``[tool.incremental]`` table.
 
@@ -157,6 +170,9 @@ The commands that can be given after that will determine what the next version i
 
 If you give no arguments, it will strip the release candidate number, making it a "full release".
 
+Indeterminate Versions
+----------------------
+
 Incremental supports "indeterminate" versions, as a stand-in for the next "full" version. This can be used when the version which will be displayed to the end-user is unknown (for example "introduced in" or "deprecated in"). Incremental supports the following indeterminate versions:
 
 - ``Version("<projectname>", "NEXT", 0, 0)``
@@ -173,11 +189,17 @@ Once the final version is made, it will become:
 - ``<projectname> 17.1.0``
 
 
-.. |coverage| image:: https://codecov.io/gh/twisted/incremental/branch/master/graph/badge.svg?token=K2ieeL887X
-.. _coverage: https://codecov.io/gh/twisted/incremental
+.. |pypi| image:: http://img.shields.io/pypi/v/incremental.svg
+    :alt: PyPI
+    :target: https://pypi.python.org/pypi/incremental
+
+.. |calver| image:: https://img.shields.io/badge/calver-YY.MM.MICRO-22bfda.svg
+    :alt: calver: YY.MM.MICRO
+    :target: https://calver.org/
 
 .. |gha| image:: https://github.com/twisted/incremental/actions/workflows/tests.yaml/badge.svg
-.. _gha: https://github.com/twisted/incremental/actions/workflows/tests.yaml
+    :alt: Tests
+    :target: https://github.com/twisted/incremental/actions/workflows/tests.yaml
 
-.. |pypi| image:: http://img.shields.io/pypi/v/incremental.svg
-.. _pypi: https://pypi.python.org/pypi/incremental
+.. |coverage| image:: https://img.shields.io/badge/Coverage-100%25-green
+    :alt: Coverage: 100%
