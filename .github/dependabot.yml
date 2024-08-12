@@ -1,0 +1,21 @@
+version: 2
+updates:
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    ignore:
+    - dependency-name: ruff
+      update-types:
+        # Cut the frequency of linter Dependabot PRs.
+        # Ruff is 0ver, so this ignores all non-"major" releases.
+        - "version-update:semver-patch"
+
