@@ -1,14 +1,12 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-from __future__ import absolute_import, division, print_function
 
-from argparse import ArgumentParser
-import os
 import datetime
-from typing import Any, Callable, Dict, Optional, Sequence
+import os
+from argparse import ArgumentParser
 
-from incremental import Version, _findPath, _existing_version
+from incremental import Version, _existing_version, _findPath
 
 _VERSIONPY_TEMPLATE = '''"""
 Provides {package} version information.

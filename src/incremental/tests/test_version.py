@@ -5,16 +5,14 @@
 Tests for L{incremental}.
 """
 
-from __future__ import division, absolute_import
 
+import operator
 import sys
 import unittest
-import operator
-
-from incremental import getVersionString, IncomparableVersions
-from incremental import Version, _inf
 
 from twisted.trial.unittest import TestCase
+
+from incremental import IncomparableVersions, Version, _inf, getVersionString
 
 
 class VersionsTests(TestCase):
@@ -84,7 +82,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0)
         self.assertTrue(va > vb)
         self.assertFalse(va < vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_NEXTMustBeAlone(self):
         """
@@ -111,7 +109,7 @@ class VersionsTests(TestCase):
         """
         va = Version("whatever", "NEXT", 0, 0)
         vb = Version("whatever", "NEXT", 0, 0)
-        self.assertEquals(vb, va)
+        self.assertEqual(vb, va)
 
     def test_comparingPrereleasesWithReleases(self):
         """
@@ -121,7 +119,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0)
         self.assertTrue(va < vb)
         self.assertFalse(va > vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_prereleaseDeprecated(self):
         """
@@ -159,7 +157,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0)
         self.assertTrue(va < vb)
         self.assertFalse(va > vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_comparingPostReleasesWithReleases(self):
         """
@@ -170,7 +168,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0)
         self.assertTrue(va > vb)
         self.assertFalse(va < vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_comparingDevReleasesWithPreviousPostReleases(self):
         """
@@ -181,7 +179,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0, post=1)
         self.assertTrue(va > vb)
         self.assertFalse(va < vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_comparingDevReleasesWithReleases(self):
         """
@@ -191,7 +189,7 @@ class VersionsTests(TestCase):
         vb = Version("whatever", 1, 0, 0)
         self.assertTrue(va < vb)
         self.assertFalse(va > vb)
-        self.assertNotEquals(vb, va)
+        self.assertNotEqual(vb, va)
 
     def test_rcEqualspre(self):
         """

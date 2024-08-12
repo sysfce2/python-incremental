@@ -7,19 +7,18 @@ Versions for Python packages.
 See L{Version}.
 """
 
-from __future__ import division, absolute_import
 
 import os
 import sys
 import warnings
-from typing import TYPE_CHECKING, Any, TypeVar, Union, Optional, Dict, BinaryIO
 from dataclasses import dataclass
-
+from typing import TYPE_CHECKING, Any, BinaryIO, Dict, Optional, TypeVar, Union
 
 if TYPE_CHECKING:
     import io
-    from typing_extensions import Literal
     from distutils.dist import Distribution as _Distribution
+
+    from typing_extensions import Literal
 
 
 #
@@ -47,7 +46,7 @@ def _cmp(a, b):  # type: (Any, Any) -> int
 #
 
 
-class _Inf(object):
+class _Inf:
     """
     An object that is bigger than all other objects.
     """
@@ -86,7 +85,7 @@ class IncomparableVersions(TypeError):
     """
 
 
-class Version(object):
+class Version:
     """
     An encapsulation of a version for a project, with support for outputting
     PEP-440 compatible version strings.
@@ -368,9 +367,7 @@ def _findPath(path, package):  # type: (str, str) -> str
         return current_dir
     else:
         raise ValueError(
-            "Can't find the directory of project {}: I looked in {} and {}".format(
-                package, src_dir, current_dir
-            )
+            f"Can't find the directory of project {package}: I looked in {src_dir} and {current_dir}"
         )
 
 
@@ -380,7 +377,7 @@ def _existing_version(version_path):  # type: (str) -> Version
     """
     version_info = {}  # type: Dict[str, Version]
 
-    with open(version_path, "r") as f:
+    with open(version_path) as f:
         exec(f.read(), version_info)
 
     return version_info["__version__"]
@@ -528,7 +525,7 @@ Or:
 """)
     if not isinstance(package, str):
         raise TypeError(
-            "The project name must be a string, but found {}".format(type(package))
+            f"The project name must be a string, but found {type(package)}"
         )
 
     return _IncrementalConfig(
