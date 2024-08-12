@@ -3,10 +3,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-import click
+from argparse import ArgumentParser
 import os
 import datetime
-from typing import Dict, Optional, Callable
+from typing import Any, Callable, Dict, Optional, Sequence
 
 from incremental import Version, _findPath, _existing_version
 
@@ -15,7 +15,7 @@ Provides {package} version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update {package}` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -216,41 +216,64 @@ def _run(
     _print("Updating %s" % (versionpath,))
     with open(versionpath, "wb") as f:
         f.write(
-            (
-                _VERSIONPY_TEMPLATE.format(package=package, version_repr=version_repr)
-            ).encode("utf8")
+            _VERSIONPY_TEMPLATE.format(
+                package=package, version_repr=version_repr
+            ).encode("utf-8")
         )
 
 
-@click.command()
-@click.argument("package")
-@click.option("--path", default=None)
-@click.option("--newversion", default=None)
-@click.option("--patch", is_flag=True)
-@click.option("--rc", is_flag=True)
-@click.option("--post", is_flag=True)
-@click.option("--dev", is_flag=True)
-@click.option("--create", is_flag=True)
-def run(
-    package,  # type: str
-    path,  # type: Optional[str]
-    newversion,  # type: Optional[str]
-    patch,  # type: bool
-    rc,  # type: bool
-    post,  # type: bool
-    dev,  # type: bool
-    create,  # type: bool
-):  # type: (...) -> None
-    return _run(
-        package=package,
-        path=path,
-        newversion=newversion,
-        patch=patch,
-        rc=rc,
-        post=post,
-        dev=dev,
-        create=create,
+def _add_update_args(p):  # type: (ArgumentParser) -> None
+    p.add_argument("package")
+    p.add_argument("--path", default=None)
+    p.add_argument("--newversion", default=None, metavar="VERSION")
+    p.add_argument("--patch", default=False, action="store_true")
+    p.add_argument("--rc", default=False, action="store_true")
+    p.add_argument("--post", default=False, action="store_true")
+    p.add_argument("--dev", default=False, action="store_true")
+    p.add_argument("--create", default=False, action="store_true")
+
+
+def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
+    """
+    Entrypoint of the `incremental` script
+    """
+    p = ArgumentParser()
+    subparsers = p.add_subparsers(required=True)
+
+    update_p = subparsers.add_parser("update")
+    _add_update_args(update_p)
+
+    args = p.parse_args(argv)  # type: Any
+    _run(
+        package=args.package,
+        path=args.path,
+        newversion=args.newversion,
+        patch=args.patch,
+        rc=args.rc,
+        post=args.post,
+        dev=args.dev,
+        create=args.create,
     )
+
+
+def run(argv=None):  # type: (Optional[Sequence[str]]) -> None
+    """
+    Entrypoint for `python -m incremental.update`
+    """
+    p = ArgumentParser()
+    _add_update_args(p)
+    args = p.parse_args(argv)  # type: Any
+    _run(
+        package=args.package,
+        path=args.path,
+        newversion=args.newversion,
+        patch=args.patch,
+        rc=args.rc,
+        post=args.post,
+        dev=args.dev,
+        create=args.create,
+    )
+    raise SystemExit(0)  # Behave like Click.
 
 
 if __name__ == "__main__":  # pragma: no cover

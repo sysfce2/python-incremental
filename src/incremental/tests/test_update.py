@@ -10,12 +10,12 @@ from __future__ import division, absolute_import
 import sys
 import os
 import datetime
+from io import StringIO
 
 from twisted.python.filepath import FilePath
-from twisted.python.compat import NativeStringIO
 from twisted.trial.unittest import TestCase
 
-from incremental.update import _run, run
+from incremental.update import _run, run, _main
 
 
 class NonCreatedUpdateTests(TestCase):
@@ -44,7 +44,7 @@ next_released_version = "inctestpkg NEXT"
 
     def test_create(self):
         """
-        `incremental.update package --create` initialises the version.
+        `incremental update package --create` initialises the version.
         """
         self.assertFalse(self.packagedir.child("_version.py").exists())
 
@@ -71,7 +71,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -116,7 +116,7 @@ __all__ = ["__version__"]
 
     def test_path(self):
         """
-        `incremental.update package --dev` raises and quits if it can't find
+        `incremental update package --dev` raises and quits if it can't find
         the package.
         """
         out = []
@@ -171,7 +171,7 @@ __all__ = ["__version__"]
 
     def test_path(self):
         """
-        `incremental.update package --path=<path> --dev` increments the dev
+        `incremental update package --path=<path> --dev` increments the dev
         version of the package on the given path
         """
         out = []
@@ -197,7 +197,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -228,7 +228,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -273,7 +273,7 @@ __all__ = ["__version__"]
 
     def test_path(self):
         """
-        `incremental.update package --path=<path> --dev` increments the dev
+        `incremental update package --path=<path> --dev` increments the dev
         version of the package on the given path
         """
         out = []
@@ -298,7 +298,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -309,7 +309,7 @@ __all__ = ["__version__"]
 
     def test_dev(self):
         """
-        `incremental.update package --dev` increments the dev version.
+        `incremental update package --dev` increments the dev version.
         """
         out = []
         _run(
@@ -334,7 +334,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -369,7 +369,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -388,7 +388,7 @@ next_released_version = "inctestpkg 1.2.4"
 
     def test_patch_with_prerelease_and_dev(self):
         """
-        `incremental.update package --patch` increments the patch version, and
+        `incremental update package --patch` increments the patch version, and
         disregards any old prerelease/dev versions.
         """
         self.packagedir.child("_version.py").setContent(
@@ -421,7 +421,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -432,7 +432,7 @@ __all__ = ["__version__"]
 
     def test_rc_patch(self):
         """
-        `incremental.update package --patch --rc` increments the patch
+        `incremental update package --patch --rc` increments the patch
         version and makes it a release candidate.
         """
         out = []
@@ -457,7 +457,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -476,7 +476,7 @@ next_released_version = "inctestpkg 1.2.4rc1"
 
     def test_rc_with_existing_rc(self):
         """
-        `incremental.update package --rc` increments the rc version if the
+        `incremental update package --rc` increments the rc version if the
         existing version is an rc, and discards any dev version.
         """
         self.packagedir.child("_version.py").setContent(
@@ -509,7 +509,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -528,7 +528,7 @@ next_released_version = "inctestpkg 1.2.3rc2"
 
     def test_rc_with_no_rc(self):
         """
-        `incremental.update package --rc`, when the package is not a release
+        `incremental update package --rc`, when the package is not a release
         candidate, will issue a new major/minor rc, and disregards the micro
         and dev.
         """
@@ -562,7 +562,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -606,7 +606,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -644,7 +644,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -714,7 +714,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -758,7 +758,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -802,7 +802,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -1055,7 +1055,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -1103,7 +1103,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -1147,7 +1147,7 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
 
 from incremental import Version
 
@@ -1202,28 +1202,31 @@ __all__ = ["__version__"]
 
         self.date = DateModule()
 
-    def test_run(self):
+    def test_help(self):
         """
-        Calling run() with no args will cause it to print help.
+        Running `python -m incremental.update --help` causes it to print help.
         """
-        stringio = NativeStringIO()
+        stringio = StringIO()
         self.patch(sys, "stdout", stringio)
 
         with self.assertRaises(SystemExit) as e:
             run(["--help"])
 
         self.assertEqual(e.exception.args[0], 0)
-        self.assertIn("Show this message and exit", stringio.getvalue())
+        self.assertIn("show this help message and exit", stringio.getvalue())
 
-    def test_insufficient_args(self):
+    def test_incrementalDotUpdate(self):
         """
-        Calling run() with no args will cause it to print help.
+        Running `python -m incremental.update inctestpkg --rc` creates
+        a release candidate.
         """
-        stringio = NativeStringIO()
+        stringio = StringIO()
         self.patch(sys, "stdout", stringio)
         self.patch(os, "getcwd", self.getcwd)
         self.patch(datetime, "date", self.date)
 
+        # This used to be implemented with Click, which always raises
+        # SystemExit. We continue to do so for compatability.
         with self.assertRaises(SystemExit) as e:
             run(["inctestpkg", "--rc"])
 
@@ -1237,7 +1240,45 @@ Provides inctestpkg version information.
 """
 
 # This file is auto-generated! Do not edit!
-# Use `python -m incremental.update inctestpkg` to change this file.
+# Use `incremental` to change this file.
+
+from incremental import Version
+
+__version__ = Version("inctestpkg", 16, 8, 0, release_candidate=1)
+__all__ = ["__version__"]
+''',
+        )
+        self.assertEqual(
+            self.packagedir.child("__init__.py").getContent(),
+            b"""
+from incremental import Version
+introduced_in = Version("inctestpkg", 16, 8, 0, release_candidate=1).short()
+next_released_version = "inctestpkg 16.8.0rc1"
+""",
+        )
+
+    def test_incrementalUpdate(self):
+        """
+        Running `incremental update inctestpkg --rc` creates a release
+        candidate.
+        """
+        stringio = StringIO()
+        self.patch(sys, "stdout", stringio)
+        self.patch(os, "getcwd", self.getcwd)
+        self.patch(datetime, "date", self.date)
+
+        _main(["update", "inctestpkg", "--rc"])
+
+        self.assertIn("Updating codebase", stringio.getvalue())
+
+        self.assertEqual(
+            self.packagedir.child("_version.py").getContent(),
+            b'''"""
+Provides inctestpkg version information.
+"""
+
+# This file is auto-generated! Do not edit!
+# Use `incremental` to change this file.
 
 from incremental import Version
 
