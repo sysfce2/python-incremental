@@ -5,7 +5,6 @@
 Tests for L{incremental}.
 """
 
-
 import operator
 import sys
 import unittest

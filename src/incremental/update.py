@@ -5,6 +5,7 @@
 import datetime
 import os
 from argparse import ArgumentParser
+from typing import Any, Callable, Dict, Optional, Sequence
 
 from incremental import Version, _existing_version, _findPath
 
@@ -25,18 +26,18 @@ _YEAR_START = 2000
 
 
 def _run(
-    package,  # type: str
-    path,  # type: Optional[str]
-    newversion,  # type: Optional[str]
-    patch,  # type: bool
-    rc,  # type: bool
-    post,  # type: bool
-    dev,  # type: bool
-    create,  # type: bool
-    _date=None,  # type: Optional[datetime.date]
-    _getcwd=None,  # type: Optional[Callable[[], str]]
-    _print=print,  # type: Callable[[object], object]
-):  # type: (...) -> None
+    package: str,
+    path: Optional[str],
+    newversion: Optional[str],
+    patch: bool,
+    rc: bool,
+    post: bool,
+    dev: bool,
+    create: bool,
+    _date: Optional[datetime.date] = None,
+    _getcwd: Optional[Callable[[], str]] = None,
+    _print: Callable[[object], object] = print,
+) -> None:
     if not _getcwd:
         _getcwd = os.getcwd
 
@@ -220,7 +221,7 @@ def _run(
         )
 
 
-def _add_update_args(p):  # type: (ArgumentParser) -> None
+def _add_update_args(p: ArgumentParser) -> None:
     p.add_argument("package")
     p.add_argument("--path", default=None)
     p.add_argument("--newversion", default=None, metavar="VERSION")
@@ -231,7 +232,7 @@ def _add_update_args(p):  # type: (ArgumentParser) -> None
     p.add_argument("--create", default=False, action="store_true")
 
 
-def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
+def _main(argv: Optional[Sequence[str]] = None) -> None:
     """
     Entrypoint of the `incremental` script
     """
@@ -241,7 +242,7 @@ def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
     update_p = subparsers.add_parser("update")
     _add_update_args(update_p)
 
-    args = p.parse_args(argv)  # type: Any
+    args: Any = p.parse_args(argv)
     _run(
         package=args.package,
         path=args.path,
@@ -254,13 +255,13 @@ def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
     )
 
 
-def run(argv=None):  # type: (Optional[Sequence[str]]) -> None
+def run(argv: Optional[Sequence[str]] = None) -> None:
     """
     Entrypoint for `python -m incremental.update`
     """
     p = ArgumentParser()
     _add_update_args(p)
-    args = p.parse_args(argv)  # type: Any
+    args: Any = p.parse_args(argv)
     _run(
         package=args.package,
         path=args.path,

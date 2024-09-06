@@ -5,7 +5,6 @@
 Tests for L{incremental.update}.
 """
 
-
 import datetime
 import os
 import sys

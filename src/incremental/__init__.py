@@ -7,7 +7,6 @@ Versions for Python packages.
 See L{Version}.
 """
 
-
 import os
 import sys
 import warnings
@@ -524,9 +523,7 @@ Or:
 
 """)
     if not isinstance(package, str):
-        raise TypeError(
-            f"The project name must be a string, but found {type(package)}"
-        )
+        raise TypeError(f"The project name must be a string, but found {type(package)}")
 
     return _IncrementalConfig(
         opt_in=tool_incremental is not None,
