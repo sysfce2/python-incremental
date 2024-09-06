@@ -202,7 +202,7 @@ Once the final version is made, it will become:
 
 .. |pypi| image:: http://img.shields.io/pypi/v/incremental.svg
     :alt: PyPI
-    :target: https://pypi.python.org/pypi/incremental
+    :target: https://pypi.org/project/incremental/
 
 .. |calver| image:: https://img.shields.io/badge/calver-YY.MM.MICRO-22bfda.svg
     :alt: calver: YY.MM.MICRO
