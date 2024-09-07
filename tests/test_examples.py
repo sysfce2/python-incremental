@@ -10,12 +10,12 @@ from importlib import metadata
 from subprocess import run
 from tempfile import TemporaryDirectory
 
-from incremental import Version
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
 from build import BuildBackendException, ProjectBuilder
 from build.env import DefaultIsolatedEnv
+from incremental import Version
 
 TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
