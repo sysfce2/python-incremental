@@ -5,7 +5,7 @@
 import datetime
 import os
 from argparse import ArgumentParser
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 from incremental import Version, _existing_version, _findPath
 

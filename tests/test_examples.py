@@ -20,7 +20,7 @@ from build.env import DefaultIsolatedEnv
 TEST_DIR = FilePath(os.path.abspath(os.path.dirname(__file__)))
 
 
-def build_and_install(path):  # type: (FilePath) -> None
+def build_and_install(path: FilePath) -> None:
     with TemporaryDirectory(prefix="dist") as dist_dir:
         with DefaultIsolatedEnv(installer="pip") as env:
             env.install(

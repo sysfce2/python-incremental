@@ -11,13 +11,10 @@ import os
 import sys
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, BinaryIO, Dict, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, BinaryIO, Dict, Optional, Union, Literal
 
 if TYPE_CHECKING:
-    import io
     from distutils.dist import Distribution as _Distribution
-
-    from typing_extensions import Literal
 
 
 #
@@ -25,7 +22,7 @@ if TYPE_CHECKING:
 #
 
 
-def _cmp(a, b):  # type: (Any, Any) -> int
+def _cmp(a: Any, b: Any) -> int:
     """
     Compare two objects.
 
@@ -50,28 +47,27 @@ class _Inf:
     An object that is bigger than all other objects.
     """
 
-    def __cmp__(self, other):  # type: (object) -> int
+    def __cmp__(self, other: object) -> int:
         """
         @param other: Another object.
         @type other: any
 
         @return: 0 if other is inf, 1 otherwise.
-        @rtype: C{int}
         """
         if other is _inf:
             return 0
         return 1
 
-    def __lt__(self, other):  # type: (object) -> bool
+    def __lt__(self, other: object) -> bool:
         return self.__cmp__(other) < 0
 
-    def __le__(self, other):  # type: (object) -> bool
+    def __le__(self, other: object) -> bool:
         return self.__cmp__(other) <= 0
 
-    def __gt__(self, other):  # type: (object) -> bool
+    def __gt__(self, other: object) -> bool:
         return self.__cmp__(other) > 0
 
-    def __ge__(self, other):  # type: (object) -> bool
+    def __ge__(self, other: object) -> bool:
         return self.__cmp__(other) >= 0
 
 
@@ -95,14 +91,14 @@ class Version:
 
     def __init__(
         self,
-        package,  # type: str
-        major,  # type: Union[Literal["NEXT"], int]
-        minor,  # type: int
-        micro,  # type: int
-        release_candidate=None,  # type: Optional[int]
-        prerelease=None,  # type: Optional[int]
-        post=None,  # type: Optional[int]
-        dev=None,  # type: Optional[int]
+        package: str,
+        major: Union[Literal["NEXT"], int],
+        minor: int,
+        micro: int,
+        release_candidate: Optional[int] = None,
+        prerelease: Optional[int] = None,
+        post: Optional[int] = None,
+        dev: Optional[int] = None,
     ):
         """
         @param package: Name of the package that this is a version of.
@@ -149,7 +145,7 @@ class Version:
         self.dev = dev
 
     @property
-    def prerelease(self):  # type: () -> Optional[int]
+    def prerelease(self) -> Optional[int]:
         warnings.warn(
             "Accessing incremental.Version.prerelease was "
             "deprecated in Incremental 16.9.0. Use "
@@ -159,7 +155,7 @@ class Version:
         )
         return self.release_candidate
 
-    def public(self):  # type: () -> str
+    def public(self) -> str:
         """
         Return a PEP440-compatible "public" representation of this L{Version}.
 
@@ -194,7 +190,7 @@ class Version:
     short = public
     local = public
 
-    def __repr__(self):  # type: () -> str
+    def __repr__(self) -> str:
         if self.release_candidate is None:
             release_candidate = ""
         else:
@@ -221,10 +217,10 @@ class Version:
             dev,
         )
 
-    def __str__(self):  # type: () -> str
+    def __str__(self) -> str:
         return "[%s, version %s]" % (self.package, self.short())
 
-    def __cmp__(self, other):  # type: (object) -> int
+    def __cmp__(self, other: object) -> int:
         """
         Compare two versions, considering major versions, minor versions, micro
         versions, then release candidates, then postreleases, then dev
@@ -253,12 +249,12 @@ class Version:
             raise IncomparableVersions("%r != %r" % (self.package, other.package))
 
         if self.major == "NEXT":
-            major = _inf  # type: Union[int, _Inf]
+            major: Union[int, _Inf] = _inf
         else:
             major = self.major
 
         if self.release_candidate is None:
-            release_candidate = _inf  # type: Union[int, _Inf]
+            release_candidate: Union[int, _Inf] = _inf
         else:
             release_candidate = self.release_candidate
 
@@ -268,17 +264,17 @@ class Version:
             post = self.post
 
         if self.dev is None:
-            dev = _inf  # type: Union[int, _Inf]
+            dev: Union[int, _Inf] = _inf
         else:
             dev = self.dev
 
         if other.major == "NEXT":
-            othermajor = _inf  # type: Union[int, _Inf]
+            othermajor: Union[int, _Inf] = _inf
         else:
             othermajor = other.major
 
         if other.release_candidate is None:
-            otherrc = _inf  # type: Union[int, _Inf]
+            otherrc: Union[int, _Inf] = _inf
         else:
             otherrc = other.release_candidate
 
@@ -288,7 +284,7 @@ class Version:
             otherpost = other.post
 
         if other.dev is None:
-            otherdev = _inf  # type: Union[int, _Inf]
+            otherdev: Union[int, _Inf] = _inf
         else:
             otherdev = other.dev
 
@@ -298,44 +294,44 @@ class Version:
         )
         return x
 
-    def __eq__(self, other):  # type: (object) -> bool
+    def __eq__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c == 0
 
-    def __ne__(self, other):  # type: (object) -> bool
+    def __ne__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c != 0
 
-    def __lt__(self, other):  # type: (object) -> bool
+    def __lt__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c < 0
 
-    def __le__(self, other):  # type: (object) -> bool
+    def __le__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c <= 0
 
-    def __gt__(self, other):  # type: (object) -> bool
+    def __gt__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c > 0
 
-    def __ge__(self, other):  # type: (object) -> bool
+    def __ge__(self, other: object) -> bool:
         c = self.__cmp__(other)
         if c is NotImplemented:
             return c  # type: ignore[return-value]
         return c >= 0
 
 
-def getVersionString(version):  # type: (Version) -> str
+def getVersionString(version: Version) -> str:
     """
     Get a friendly string for the given version object.
 
@@ -346,7 +342,7 @@ def getVersionString(version):  # type: (Version) -> str
     return result
 
 
-def _findPath(path, package):  # type: (str, str) -> str
+def _findPath(path: str, package: str) -> str:
     """
     Determine the package root directory.
 
@@ -370,11 +366,11 @@ def _findPath(path, package):  # type: (str, str) -> str
         )
 
 
-def _existing_version(version_path):  # type: (str) -> Version
+def _existing_version(version_path: str) -> Version:
     """
     Load the current version from a ``_version.py`` file.
     """
-    version_info = {}  # type: Dict[str, Version]
+    version_info: Dict[str, Version] = {}
 
     with open(version_path) as f:
         exec(f.read(), version_info)
@@ -382,7 +378,7 @@ def _existing_version(version_path):  # type: (str) -> Version
     return version_info["__version__"]
 
 
-def _get_setuptools_version(dist):  # type: (_Distribution) -> None
+def _get_setuptools_version(dist: "_Distribution") -> None:
     """
     Setuptools integration: load the version from the working directory
 
@@ -417,7 +413,9 @@ def _get_setuptools_version(dist):  # type: (_Distribution) -> None
     dist.metadata.version = version.public()
 
 
-def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, object, object) -> None
+def _get_distutils_version(
+    dist: "_Distribution", keyword: object, value: object
+) -> None:
     """
     Distutils integration: get the version from the package listed in the Distribution.
 
@@ -442,7 +440,7 @@ def _get_distutils_version(dist, keyword, value):  # type: (_Distribution, objec
     raise Exception("No _version.py found.")  # pragma: no cover
 
 
-def _load_toml(f):  # type: (BinaryIO) -> Any
+def _load_toml(f: BinaryIO) -> Any:
     """
     Read the content of a TOML file.
     """
@@ -476,12 +474,12 @@ class _IncrementalConfig:
     """Path to the package root"""
 
     @property
-    def version_path(self):  # type: () -> str
+    def version_path(self) -> str:
         """Path of the ``_version.py`` file. May not exist."""
         return os.path.join(self.path, "_version.py")
 
 
-def _load_pyproject_toml(toml_path):  # type: (str) -> _IncrementalConfig
+def _load_pyproject_toml(toml_path: str) -> _IncrementalConfig:
     """
     Load Incremental configuration from a ``pyproject.toml``
 
@@ -532,7 +530,7 @@ Or:
     )
 
 
-def _extract_tool_incremental(data):  # type: (Dict[str, object]) -> Optional[Dict[str, object]]
+def _extract_tool_incremental(data: Dict[str, object]) -> Optional[Dict[str, object]]:
     if "tool" not in data:
         return None
     if not isinstance(data["tool"], dict):
@@ -552,7 +550,7 @@ def _extract_tool_incremental(data):  # type: (Dict[str, object]) -> Optional[Di
 from ._version import __version__  # noqa: E402
 
 
-def _setuptools_version():  # type: () -> str
+def _setuptools_version() -> str:
     return __version__.public()  # pragma: no cover
 
 

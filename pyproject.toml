@@ -69,7 +69,6 @@ select = [
 ]
 ignore = [
     "E501",
-    "F401",  # Ruff doesn't seem to understand type comments?
     "UP031",  # TODO: Avoid % formatting.
 ]
 
