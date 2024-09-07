@@ -34,7 +34,7 @@ coverage==7.5.4
     #   coverage-p
 coverage-p==24.7.0
     # via -r requirements_tests.in
-cryptography==42.0.8
+cryptography==43.0.1
     # via secretstorage
 distlib==0.3.8
     # via virtualenv
