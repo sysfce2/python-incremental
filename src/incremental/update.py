@@ -176,7 +176,7 @@ def _run(
     existing_version_repr = repr(existing).split("#")[0].replace("'", '"')
     existing_version_repr_bytes = existing_version_repr.encode("utf8")
 
-    _print("Updating codebase to %s" % (v.public()))
+    _print(f"Updating codebase to {v.public()}")
 
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
@@ -208,11 +208,11 @@ def _run(
             )
 
             if content != original_content:
-                _print("Updating %s" % (filepath,))
+                _print(f"Updating {filepath}")
                 with open(filepath, "wb") as f:
                     f.write(content)
 
-    _print("Updating %s" % (versionpath,))
+    _print(f"Updating {versionpath}")
     with open(versionpath, "wb") as f:
         f.write(
             _VERSIONPY_TEMPLATE.format(

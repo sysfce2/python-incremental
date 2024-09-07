@@ -69,7 +69,6 @@ select = [
 ]
 ignore = [
     "E501",
-    "UP031",  # TODO: Avoid % formatting.
 ]
 
 [tool.towncrier]

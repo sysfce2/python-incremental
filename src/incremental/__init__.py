@@ -11,7 +11,7 @@ import os
 import sys
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, BinaryIO, Dict, Optional, Union, Literal
+from typing import TYPE_CHECKING, Any, BinaryIO, Dict, Literal, Optional, Union
 
 if TYPE_CHECKING:
     from distutils.dist import Distribution as _Distribution
@@ -172,19 +172,19 @@ class Version:
         if self.release_candidate is None:
             rc = ""
         else:
-            rc = "rc%s" % (self.release_candidate,)
+            rc = f"rc{self.release_candidate}"
 
         if self.post is None:
             post = ""
         else:
-            post = ".post%s" % (self.post,)
+            post = f".post{self.post}"
 
         if self.dev is None:
             dev = ""
         else:
-            dev = ".dev%s" % (self.dev,)
+            dev = f".dev{self.dev}"
 
-        return "%r.%d.%d%s%s%s" % (self.major, self.minor, self.micro, rc, post, dev)
+        return f"{self.major!r}.{self.minor:d}.{self.micro:d}{rc}{post}{dev}"
 
     base = public
     short = public
@@ -194,31 +194,26 @@ class Version:
         if self.release_candidate is None:
             release_candidate = ""
         else:
-            release_candidate = ", release_candidate=%r" % (self.release_candidate,)
+            release_candidate = f", release_candidate={self.release_candidate!r}"
 
         if self.post is None:
             post = ""
         else:
-            post = ", post=%r" % (self.post,)
+            post = f", post={self.post!r}"
 
         if self.dev is None:
             dev = ""
         else:
-            dev = ", dev=%r" % (self.dev,)
+            dev = f", dev={self.dev!r}"
 
-        return "%s(%r, %r, %d, %d%s%s%s)" % (
-            self.__class__.__name__,
-            self.package,
-            self.major,
-            self.minor,
-            self.micro,
-            release_candidate,
-            post,
-            dev,
+        return (
+            f"{self.__class__.__name__}("
+            f"{self.package!r}, {self.major!r}, {self.minor:d}, {self.micro:d}"
+            f"{release_candidate}{post}{dev})"
         )
 
     def __str__(self) -> str:
-        return "[%s, version %s]" % (self.package, self.short())
+        return f"[{self.package}, version {self.short()}]"
 
     def __cmp__(self, other: object) -> int:
         """
@@ -246,7 +241,7 @@ class Version:
         if not isinstance(other, self.__class__):
             return NotImplemented
         if self.package.lower() != other.package.lower():
-            raise IncomparableVersions("%r != %r" % (self.package, other.package))
+            raise IncomparableVersions(f"{self.package!r} != {other.package!r}")
 
         if self.major == "NEXT":
             major: Union[int, _Inf] = _inf
@@ -338,7 +333,7 @@ def getVersionString(version: Version) -> str:
     @param version: A L{Version} object.
     @return: A string containing the package and short version number.
     """
-    result = "%s %s" % (version.package, version.short())
+    result = f"{version.package} {version.short()}"
     return result
 
 
