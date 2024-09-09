@@ -5,10 +5,10 @@ import os
 import shlex
 from typing import Any, Dict, List, Type, TypedDict
 
-from hatchling.version.source.plugin.interface import VersionSourceInterface
 from hatchling.plugin import hookimpl
+from hatchling.version.source.plugin.interface import VersionSourceInterface
 
-from incremental import _load_pyproject_toml, _existing_version
+from incremental import _existing_version, _load_pyproject_toml
 
 
 class _VersionData(TypedDict):

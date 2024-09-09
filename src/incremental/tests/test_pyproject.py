@@ -4,11 +4,12 @@
 """Test handling of ``pyproject.toml`` configuration"""
 
 import os
-from typing import cast, Optional, Union
 from pathlib import Path
+from typing import Optional, Union, cast
+
 from twisted.trial.unittest import TestCase
 
-from incremental import _load_pyproject_toml, _IncrementalConfig
+from incremental import _IncrementalConfig, _load_pyproject_toml
 
 
 class VerifyPyprojectDotTomlTests(TestCase):

@@ -5,17 +5,15 @@
 Tests for L{incremental.update}.
 """
 
-from __future__ import division, absolute_import
-
-import sys
-import os
 import datetime
+import os
+import sys
 from io import StringIO
 
 from twisted.python.filepath import FilePath
 from twisted.trial.unittest import TestCase
 
-from incremental.update import _run, run, _main
+from incremental.update import _main, _run, run
 
 
 class NonCreatedUpdateTests(TestCase):
@@ -36,7 +34,7 @@ next_released_version = "inctestpkg NEXT"
         self.getcwd = lambda: self.srcdir.path
         self.packagedir = packagedir
 
-        class Date(object):
+        class Date:
             year = 2016
             month = 8
 
@@ -108,7 +106,7 @@ __all__ = ["__version__"]
         self.getcwd = lambda: self.srcdir.path
         self.packagedir = packagedir
 
-        class Date(object):
+        class Date:
             year = 2016
             month = 8
 
@@ -163,7 +161,7 @@ __all__ = ["__version__"]
         self.getcwd = lambda: self.srcdir.path
         self.packagedir = packagedir
 
-        class Date(object):
+        class Date:
             year = 2016
             month = 8
 
@@ -265,7 +263,7 @@ __all__ = ["__version__"]
         self.getcwd = lambda: self.srcdir.path
         self.packagedir = packagedir
 
-        class Date(object):
+        class Date:
             year = 2016
             month = 8
 
@@ -1192,11 +1190,11 @@ __all__ = ["__version__"]
         self.getcwd = lambda: self.srcdir.path
         self.packagedir = packagedir
 
-        class Date(object):
+        class Date:
             year = 2016
             month = 8
 
-        class DateModule(object):
+        class DateModule:
             def today(self):
                 return Date()
 

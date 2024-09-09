@@ -1,14 +1,13 @@
 # Copyright (c) Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-from __future__ import absolute_import, division, print_function
 
-from argparse import ArgumentParser
-import os
 import datetime
-from typing import Any, Callable, Dict, Optional, Sequence
+import os
+from argparse import ArgumentParser
+from typing import Any, Callable, Optional, Sequence
 
-from incremental import Version, _findPath, _existing_version
+from incremental import Version, _existing_version, _findPath
 
 _VERSIONPY_TEMPLATE = '''"""
 Provides {package} version information.
@@ -27,18 +26,18 @@ _YEAR_START = 2000
 
 
 def _run(
-    package,  # type: str
-    path,  # type: Optional[str]
-    newversion,  # type: Optional[str]
-    patch,  # type: bool
-    rc,  # type: bool
-    post,  # type: bool
-    dev,  # type: bool
-    create,  # type: bool
-    _date=None,  # type: Optional[datetime.date]
-    _getcwd=None,  # type: Optional[Callable[[], str]]
-    _print=print,  # type: Callable[[object], object]
-):  # type: (...) -> None
+    package: str,
+    path: Optional[str],
+    newversion: Optional[str],
+    patch: bool,
+    rc: bool,
+    post: bool,
+    dev: bool,
+    create: bool,
+    _date: Optional[datetime.date] = None,
+    _getcwd: Optional[Callable[[], str]] = None,
+    _print: Callable[[object], object] = print,
+) -> None:
     if not _getcwd:
         _getcwd = os.getcwd
 
@@ -177,7 +176,7 @@ def _run(
     existing_version_repr = repr(existing).split("#")[0].replace("'", '"')
     existing_version_repr_bytes = existing_version_repr.encode("utf8")
 
-    _print("Updating codebase to %s" % (v.public()))
+    _print(f"Updating codebase to {v.public()}")
 
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
@@ -209,11 +208,11 @@ def _run(
             )
 
             if content != original_content:
-                _print("Updating %s" % (filepath,))
+                _print(f"Updating {filepath}")
                 with open(filepath, "wb") as f:
                     f.write(content)
 
-    _print("Updating %s" % (versionpath,))
+    _print(f"Updating {versionpath}")
     with open(versionpath, "wb") as f:
         f.write(
             _VERSIONPY_TEMPLATE.format(
@@ -222,7 +221,7 @@ def _run(
         )
 
 
-def _add_update_args(p):  # type: (ArgumentParser) -> None
+def _add_update_args(p: ArgumentParser) -> None:
     p.add_argument("package")
     p.add_argument("--path", default=None)
     p.add_argument("--newversion", default=None, metavar="VERSION")
@@ -233,7 +232,7 @@ def _add_update_args(p):  # type: (ArgumentParser) -> None
     p.add_argument("--create", default=False, action="store_true")
 
 
-def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
+def _main(argv: Optional[Sequence[str]] = None) -> None:
     """
     Entrypoint of the `incremental` script
     """
@@ -243,7 +242,7 @@ def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
     update_p = subparsers.add_parser("update")
     _add_update_args(update_p)
 
-    args = p.parse_args(argv)  # type: Any
+    args: Any = p.parse_args(argv)
     _run(
         package=args.package,
         path=args.path,
@@ -256,13 +255,13 @@ def _main(argv=None):  # type: (Optional[Sequence[str]]) -> None
     )
 
 
-def run(argv=None):  # type: (Optional[Sequence[str]]) -> None
+def run(argv: Optional[Sequence[str]] = None) -> None:
     """
     Entrypoint for `python -m incremental.update`
     """
     p = ArgumentParser()
     _add_update_args(p)
-    args = p.parse_args(argv)  # type: Any
+    args: Any = p.parse_args(argv)
     _run(
         package=args.package,
         path=args.path,
