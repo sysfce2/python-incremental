@@ -20,9 +20,9 @@ idna==3.7
     # via hyperlink
 incremental==22.10.0
     # via twisted
-mypy==0.812
+mypy==1.13.0
     # via -r requirements_mypy.in
-mypy-extensions==0.4.4
+mypy-extensions==1.0.0
     # via mypy
 packaging==24.1
     # via hatchling
@@ -33,13 +33,13 @@ pluggy==1.5.0
 six==1.16.0
     # via automat
 tomli==2.0.1
-    # via hatchling
+    # via
+    #   hatchling
+    #   mypy
 trove-classifiers==2024.7.2
     # via hatchling
 twisted==24.3.0
     # via -r requirements_mypy.in
-typed-ast==1.4.3
-    # via mypy
 typing-extensions==4.12.2
     # via
     #   mypy
