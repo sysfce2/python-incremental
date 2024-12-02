@@ -81,7 +81,7 @@ def _run(
         from pkg_resources import parse_version
 
         existing = _existing_version(versionpath)
-        st_version = parse_version(newversion)._version  # type: ignore[attr-defined]
+        st_version = parse_version(newversion)._version
 
         release = list(st_version.release)
 

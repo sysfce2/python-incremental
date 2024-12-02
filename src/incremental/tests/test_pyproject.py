@@ -38,9 +38,7 @@ class VerifyPyprojectDotTomlTests(TestCase):
             return _load_pyproject_toml(path_)
         except Exception as e:
             if hasattr(e, "add_note"):
-                e.add_note(  # type: ignore[attr-defined]
-                    f"While loading:\n\n{toml}"
-                )  # pragma: no coverage
+                e.add_note(f"While loading:\n\n{toml}")  # pragma: no coverage
             raise
 
     def test_fileNotFound(self):
