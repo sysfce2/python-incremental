@@ -14,7 +14,7 @@ automat==22.10.0
     # via twisted
 backports-tarfile==1.2.0
     # via jaraco-context
-build==1.2.1
+build==1.2.2.post1
     # via -r requirements_tests.in
 certifi==2024.7.4
     # via
