@@ -81,7 +81,7 @@ def _run(
         from packaging.version import Version as parse_version
 
         existing = _existing_version(versionpath)
-        st_version = parse_version(newversion)._version
+        st_version = parse_version(newversion)
 
         release = list(st_version.release)
 
@@ -100,8 +100,8 @@ def _run(
             minor,
             micro,
             release_candidate=st_version.pre[1] if st_version.pre else None,
-            post=st_version.post[1] if st_version.post else None,
-            dev=st_version.dev[1] if st_version.dev else None,
+            post=st_version.post,
+            dev=st_version.dev,
         )
 
     elif create:
