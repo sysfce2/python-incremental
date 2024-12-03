@@ -78,7 +78,7 @@ def _run(
 
     versionpath = os.path.join(path, "_version.py")
     if newversion:
-        from pkg_resources import parse_version
+        from packaging.version import Version as parse_version
 
         existing = _existing_version(versionpath)
         st_version = parse_version(newversion)._version
