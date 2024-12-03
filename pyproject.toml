@@ -1,11 +1,6 @@
 [build-system]
-requires = [
-    # Keep this aligned with the project dependencies.
-    "setuptools >= 61.0",
-    "tomli; python_version < '3.11'",
-]
-backend-path = [".", "./src"]  # See _build_meta.py
-build-backend = "_build_meta:build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "Incremental"
@@ -55,10 +50,35 @@ incremental = "incremental:_get_setuptools_version"
 [project.entry-points.hatch]
 incremental = "incremental._hatch"
 
-[tool.setuptools.dynamic]
-version = {attr = "incremental._setuptools_version"}
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/incremental",
+    "/tests",
+    "/NEWS.rst",
+    "/LICENSE",
+    "/NEWS.rst",
+    "/SECURITY.md",
+    "/.coveragerc",
+    "/tox.ini",
+    "/requirements_*.in",
+    "/requirements_*.txt",
+]
+exclude = [
+    "/src/incremental/newsfragments",
+    "/tests/example_*/src/*.egg-info",
+    "/tests/example_*/build",
+    "/tests/example_*/dist",
+]
 
-[tool.incremental]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/incremental"]
+
+[tool.hatch.version]
+source = "code"
+search-paths = ["src"]
+expression = "__version__.public()"
+path = "src/incremental/_version.py"
 
 [tool.ruff.lint]
 select = [

@@ -544,9 +544,4 @@ def _extract_tool_incremental(data: Dict[str, object]) -> Optional[Dict[str, obj
 
 from ._version import __version__  # noqa: E402
 
-
-def _setuptools_version() -> str:
-    return __version__.public()  # pragma: no cover
-
-
 __all__ = ["__version__", "Version", "getVersionString"]
