@@ -30,7 +30,7 @@ requires-python = ">=3.8"
 description = "A CalVer version manager that supports the future."
 readme = "README.rst"
 dependencies = [
-    "setuptools >= 61.0",
+    "packaging >= 17.0",
     "tomli; python_version < '3.11'",
 ]
 
