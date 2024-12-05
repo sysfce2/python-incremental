@@ -1,1 +1,1 @@
-Don't fail to build with some old versions of setuptools (build with Hatchling instead)
+Build Incremental itself with Hatchling, working around failures with certain versions of setuptools
