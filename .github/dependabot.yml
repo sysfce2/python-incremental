@@ -12,6 +12,22 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
+
+    groups:
+      packaging:
+        applies-to: version-updates
+        patterns:
+          - build
+          - hatch
+          - hatchling
+          - packaging
+
+      mypy:
+        applies-to: version-updates
+        patterns:
+          - mypy
+          - mypy-*
+
     ignore:
     - dependency-name: ruff
       update-types:
