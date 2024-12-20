@@ -10,7 +10,7 @@ automat==24.8.1
     # via twisted
 constantly==23.10.4
     # via twisted
-hatchling==1.26.3
+hatchling==1.27.0
     # via -r requirements_mypy.in
 hyperlink==21.0.0
     # via twisted
