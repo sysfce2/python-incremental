@@ -239,7 +239,11 @@ class Version:
             differ.
         """
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            # MyPy historically treated NotImplemented as Any, hence no-any-return.
+            # It doesn't seem to know that types.NotImplementedType exists, so it
+            # doesn't seem to be possible to correctly type-annotate this method.
+            # See https://github.com/python/mypy/issues/4791 for more weirdness.
+            return NotImplemented  # type: ignore[no-any-return]
         if self.package.lower() != other.package.lower():
             raise IncomparableVersions(f"{self.package!r} != {other.package!r}")
 
